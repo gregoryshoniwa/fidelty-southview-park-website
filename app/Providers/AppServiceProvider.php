@@ -38,10 +38,10 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
-            if (strlen((string) config('fspra.id_hash_salt')) < 32) {
+            if (! $this->app->runningInConsole() && strlen((string) config('fspra.id_hash_salt')) < 32) {
                 throw new \RuntimeException('Set ID_HASH_SALT to a random value of at least 32 characters before running in production.');
             }
-            if (config('fspra.payments_live') && strlen((string) config('fspra.tncb.webhook_secret')) < 32) {
+            if (! $this->app->runningInConsole() && config('fspra.payments_live') && strlen((string) config('fspra.tncb.webhook_secret')) < 32) {
                 throw new \RuntimeException('Set TNCB_WEBHOOK_SECRET (32+ characters) before turning payments on.');
             }
         }
