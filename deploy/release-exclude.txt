@@ -1,0 +1,16 @@
+.git/
+node_modules/
+release/
+tests/
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/private/*
+storage/app/public/*
+.env
+.env.*
+public/hot
+deploy/build-release.sh
+phpunit.xml
+*.log

@@ -1,0 +1,169 @@
+<?php
+
+namespace App\Filament\Resources\Residents;
+
+use App\Filament\Resources\Residents\Pages\ListResidents;
+use App\Models\AuditLog;
+use App\Models\Resident;
+use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use UnitEnum;
+
+class ResidentResource extends Resource
+{
+    protected static ?string $model = Resident::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Community';
+
+    protected static ?int $navigationSort = 3;
+
+    public const VERIFICATION = ['unverified' => 'Unverified', 'pending' => 'Pending', 'verified' => 'Verified'];
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function maskPhone(?string $phone): string
+    {
+        if (! $phone) {
+            return '-';
+        }
+
+        return str_repeat('•', max(0, strlen($phone) - 3)).substr($phone, -3);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            // Select only what the list needs: never national_id_hash or fidelity_reference.
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->select(['residents.id', 'residents.user_id', 'residents.stand_id', 'residents.verification_status', 'residents.verified_at', 'residents.created_at'])
+                ->with(['user:id,name,phone,status', 'stand:id,stand_number']))
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                TextColumn::make('user.name')->label('Name')->searchable(),
+                TextColumn::make('phone')->label('Phone')->state(fn (Resident $r) => self::maskPhone($r->user?->phone))->fontFamily('mono'),
+                TextColumn::make('stand.stand_number')->label('Stand')->searchable()->placeholder('-'),
+                TextColumn::make('verification_status')->label('Verification')->badge()
+                    ->formatStateUsing(fn ($s) => self::VERIFICATION[$s] ?? $s)
+                    ->color(fn ($s) => match ($s) { 'verified' => 'success', 'pending' => 'warning', default => 'gray' }),
+                TextColumn::make('verified_at')->dateTime('j M Y')->sortable()->placeholder('-'),
+                TextColumn::make('user.status')->label('Account')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
+                TextColumn::make('created_at')->label('Registered')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                SelectFilter::make('verification_status')->label('Verification')->options(self::VERIFICATION),
+                SelectFilter::make('account')->label('Account')
+                    ->options(['active' => 'Active', 'suspended' => 'Suspended'])
+                    ->query(fn (Builder $query, array $data) => filled($data['value']) ? $query->whereHas('user', fn ($u) => $u->where('status', $data['value'])) : $query),
+            ])
+            ->recordActions([
+                ActionGroup::make([
+                    Action::make('suspend')
+                        ->label('Suspend user')
+                        ->icon(Heroicon::OutlinedNoSymbol)
+                        ->color('warning')
+                        ->visible(fn (Resident $record) => $record->user?->status === 'active')
+                        ->requiresConfirmation()
+                        ->modalDescription('The resident is signed out of the app and cannot sign in until reactivated.')
+                        ->action(function (Resident $record) {
+                            $record->user->update(['status' => 'suspended']);
+                            $record->user->tokens()->delete();
+                            AuditLog::record('resident.suspended', $record);
+                            Notification::make()->title('User suspended')->success()->send();
+                        }),
+                    Action::make('reactivate')
+                        ->label('Reactivate user')
+                        ->icon(Heroicon::OutlinedCheckCircle)
+                        ->visible(fn (Resident $record) => $record->user && $record->user->status !== 'active' && $record->user->name !== 'Deleted resident')
+                        ->requiresConfirmation()
+                        ->action(function (Resident $record) {
+                            $record->user->update(['status' => 'active']);
+                            AuditLog::record('resident.reactivated', $record);
+                        }),
+                    Action::make('deletePersonalData')
+                        ->label('Delete personal data')
+                        ->icon(Heroicon::OutlinedTrash)
+                        ->color('danger')
+                        ->visible(fn (Resident $record) => $record->user?->name !== 'Deleted resident')
+                        ->modalHeading('Delete personal data')
+                        ->modalDescription('This anonymises the account, removes the ID link and Fidelity reference, and permanently deletes all uploaded documents. It cannot be undone. Request, payment and ledger records are kept without personal details.')
+                        ->modalSubmitActionLabel('Delete personal data')
+                        ->schema([
+                            TextInput::make('confirm')->label('Type DELETE to confirm')->required()->in(['DELETE'])
+                                ->validationMessages(['in' => 'Type DELETE in capitals to confirm.']),
+                        ])
+                        ->action(function (Resident $record) {
+                            self::deletePersonalData($record);
+                            Notification::make()->title('Personal data deleted')->success()->send();
+                        }),
+                ]),
+            ]);
+    }
+
+    public static function deletePersonalData(Resident $record): void
+    {
+        $resident = Resident::withTrashed()->findOrFail($record->id); // full row, including hidden columns
+        $user = $resident->user;
+        $docCount = 0;
+
+        DB::transaction(function () use ($resident, $user, &$docCount) {
+            if ($user) {
+                $user->update([
+                    'name' => 'Deleted resident',
+                    'phone' => '+000'.$user->id,
+                    'email' => null,
+                    'status' => 'suspended',
+                ]);
+                $user->tokens()->delete();
+            }
+
+            $resident->update([
+                'national_id_hash' => null,
+                'national_id_last4' => null,
+                'fidelity_reference' => null,
+                'phone_on_file_masked' => null,
+            ]);
+
+            foreach ($resident->documents()->get() as $doc) {
+                if ($doc->storage_path) {
+                    Storage::disk('local')->delete($doc->storage_path);
+                }
+                $doc->delete();
+                $docCount++;
+            }
+        });
+
+        AuditLog::record('resident.data_deleted', $resident, ['documents_deleted' => $docCount]);
+    }
+
+    public static function getPages(): array
+    {
+        return ['index' => ListResidents::route('/')];
+    }
+}
