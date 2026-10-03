@@ -27,6 +27,8 @@ class SecurityHeaders
         $viteOrigin = $dev ? trim((string) @file_get_contents(public_path('hot'))) : '';
         $viteWs = $dev ? preg_replace('#^http#', 'ws', $viteOrigin) : '';
 
+        $authDomain = (string) (config('fspra.firebase.auth_domain') ?: (config('fspra.firebase.project_id') ? config('fspra.firebase.project_id').'.firebaseapp.com' : ''));
+        $firebaseFrame = $authDomain !== '' ? 'https://'.$authDomain : '';
         $isAdmin = $request->is('admin', 'admin/*', 'livewire*', 'filament/*');
         $script = $isAdmin
             ? "'self' 'unsafe-inline' 'unsafe-eval'"
@@ -36,9 +38,11 @@ class SecurityHeaders
             "default-src 'self'",
             "script-src {$script} {$viteOrigin}",
             "style-src 'self' 'unsafe-inline' {$viteOrigin}",
-            "img-src 'self' data: blob:",
+            "img-src 'self' data: blob: https://www.gstatic.com",
             "font-src 'self' data: {$viteOrigin}",
-            "connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com {$viteOrigin} {$viteWs}",
+            "connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com {$viteOrigin} {$viteWs}",
+            // Firebase sign-in: Google popup handler and reCAPTCHA for phone codes.
+            "frame-src 'self' {$firebaseFrame} https://www.google.com/recaptcha/ https://recaptcha.google.com/",
             "media-src 'self' blob:",
             "worker-src 'self' blob:",
             "manifest-src 'self'",
@@ -55,7 +59,8 @@ class SecurityHeaders
             'X-Frame-Options' => 'DENY',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()',
-            'Cross-Origin-Opener-Policy' => 'same-origin',
+            // The resident app opens the Google sign-in popup, which needs to talk back to this window.
+            'Cross-Origin-Opener-Policy' => $request->is('app', 'app/*') ? 'same-origin-allow-popups' : 'same-origin',
             'Cross-Origin-Resource-Policy' => 'same-origin',
             'X-Permitted-Cross-Domain-Policies' => 'none',
         ];

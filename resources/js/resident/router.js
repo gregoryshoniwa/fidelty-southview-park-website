@@ -8,6 +8,7 @@ export const router = createRouter({
     scrollBehavior: () => ({ top: 0 }),
     routes: [
         { path: '/login', name: 'login', component: v('Login'), meta: { guest: true, title: 'Sign in' } },
+        { path: '/login/email', name: 'login-email', component: v('Login'), meta: { guest: true, title: 'Signing in' } },
         { path: '/', name: 'home', component: v('Home'), meta: { auth: true, title: 'My Home' } },
         { path: '/verify', name: 'verify', component: v('Verify'), meta: { auth: true, title: 'Verify my stand' } },
         { path: '/agreement', name: 'agreement', component: v('Agreement'), meta: { auth: true, verified: true, title: 'My Agreement' } },

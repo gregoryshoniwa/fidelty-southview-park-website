@@ -82,7 +82,22 @@ This runs the queue (receipts, notifications), quiet-hour SMS, nightly ledger ch
 
 Run `php artisan optimize` after every `.env` change.
 
-## 9. Updating
+## 9. Firebase sign-in (Google, email, optional phone)
+
+1. Go to https://console.firebase.google.com, **Add project** "Southview Park" (Analytics off).
+2. **Build > Authentication > Get started**, then **Sign-in method**:
+   - Enable **Google** (choose a support email).
+   - Enable **Email/Password** and switch on **Email link (passwordless sign-in)**.
+   - Optional: enable **Phone**. This requires upgrading to the **Blaze** plan with a card. Zimbabwe SMS cost US$0.09 each; the first 10 per day are free. Set a budget alert in Google Cloud Billing.
+3. **Authentication > Settings > Authorized domains**: add `fidelity-southview.co.zw` (and `www.`).
+4. **Project settings > General > Your apps > Web app (</>)**: register "Southview web". Copy `apiKey`, `authDomain`, `projectId`, `appId` into `.env` as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`.
+5. Optional: **Authentication > Templates** to brand the sign-in email (sender name "Southview Park Residents").
+6. To send phone codes through Firebase set `AUTH_PHONE_PROVIDER=firebase`; leave `local` to use your own SMS gateway.
+7. `php artisan optimize`.
+
+These web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
+
+## 10. Updating
 
 Build a new zip, upload, extract over `~/fspra` (your `.env` and `storage/` are not in the zip), then:
 

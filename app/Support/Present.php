@@ -20,7 +20,9 @@ final class Present
         return [
             'id' => $u->id,
             'name' => $u->name,
-            'phone_masked' => Phone::mask($u->phone),
+            'phone_masked' => $u->phone ? Phone::mask($u->phone) : null,
+            'has_phone' => (bool) $u->phone,
+            'auth_provider' => $u->auth_provider,
             'email' => $u->email,
             'locale' => $u->locale,
             'notification_prefs' => $u->notification_prefs ?? ['sms' => true, 'push' => true],

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 // ---------- Public ----------
 Route::post('/auth/otp', [Api\AuthController::class, 'requestOtp'])->middleware('throttle:otp');
 Route::post('/auth/verify', [Api\AuthController::class, 'verifyOtp'])->middleware('throttle:20,1');
+Route::get('/auth/config', [Api\AuthController::class, 'config']);
+Route::post('/auth/firebase', [Api\AuthController::class, 'firebase'])->middleware('throttle:20,1');
 Route::get('/assistant/config', [Api\AssistantController::class, 'config']);
 Route::post('/assistant/chat', [Api\AssistantController::class, 'chat'])->middleware('throttle:assistant');
 Route::post('/assistant/transcript', [Api\AssistantController::class, 'transcript'])->middleware('throttle:assistant');
@@ -18,6 +20,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/me', [Api\AuthController::class, 'me']);
     Route::post('/auth/logout', [Api\AuthController::class, 'logout']);
     Route::patch('/me', [Api\AccountController::class, 'update']);
+    Route::post('/me/phone/otp', [Api\AuthController::class, 'linkPhoneOtp'])->middleware('throttle:otp');
+    Route::post('/me/phone', [Api\AuthController::class, 'linkPhone'])->middleware('throttle:20,60');
     Route::get('/me/export', [Api\AccountController::class, 'export']);
     Route::post('/me/delete-request', [Api\AccountController::class, 'requestDeletion']);
     Route::post('/assistant/escalate', [Api\AssistantController::class, 'escalate']);

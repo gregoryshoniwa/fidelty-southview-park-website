@@ -9,7 +9,7 @@ import AssistantWidget from '@/assistant/AssistantWidget.vue';
 const auth = useAuth();
 const route = useRoute();
 const router = useRouter();
-const chrome = computed(() => auth.signedIn && route.name !== 'login');
+const chrome = computed(() => auth.signedIn && !['login', 'login-email'].includes(route.name));
 const isRoot = computed(() => ['home', 'pay', 'inbox', 'community', 'notices'].includes(route.name));
 
 const tabs = [

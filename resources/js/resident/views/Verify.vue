@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { ShieldCheck, Check, FileText, Landmark, MessageSquare, Info } from 'lucide-vue-next';
 import { api } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
+import PhoneLink from '../components/PhoneLink.vue';
 import { useAuth } from '../store.js';
 
 const auth = useAuth(); const router = useRouter(); const route = useRoute();
@@ -38,7 +39,8 @@ const next = computed(() => (typeof route.query.next === 'string' && route.query
             <p class="mt-2 text-cream/80">{{ ['Your ID and stand number are matched against Fidelity Life records. Two minutes, no paperwork.', 'Fidelity Life sent a one-time code to the phone number on your Agreement of Sale.', 'Your stand is linked. Every service is now open to you.', 'The committee is confirming your stand with Fidelity Life records. You will get an SMS, usually within two working days.'][step - 1] }}</p>
         </div>
 
-        <form v-if="step === 1" class="card mt-5 flex flex-col gap-5 p-6" @submit.prevent="start">
+        <div v-if="step === 1 && !auth.user?.has_phone" class="mt-5"><PhoneLink /></div>
+        <form v-else-if="step === 1" class="card mt-5 flex flex-col gap-5 p-6" @submit.prevent="start">
             <Field id="nid" v-model="nid" label="National ID number" placeholder="63-123456-A-12" autocomplete="off" required :error="errors.national_id?.[0]" help="Used only to match Fidelity Life's record. We never store the full number." />
             <Field id="stand" v-model="stand" label="Stand number" placeholder="e.g. 1234" inputmode="text" required :error="errors.stand_number?.[0]" />
             <label class="flex items-start gap-3 rounded-[8px] bg-forest-100 p-4 text-sm text-forest-900">

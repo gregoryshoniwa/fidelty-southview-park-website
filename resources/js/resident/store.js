@@ -20,6 +20,9 @@ export const useAuth = defineStore('auth', {
             try { this.unread = (await api('/notifications', { quiet: true })).unread; } catch {}
         },
         set(user) { this.user = user; this.loaded = true; },
-        async logout() { try { await api('/auth/logout', { method: 'POST' }); } finally { this.user = null; } },
+        async logout() {
+            try { await api('/auth/logout', { method: 'POST' }); } finally { this.user = null; }
+            import('./firebase.js').then((m) => m.firebaseSignOut()).catch(() => {});
+        },
     },
 });

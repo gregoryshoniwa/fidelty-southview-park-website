@@ -22,7 +22,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public const COMMITTEE_ROLES = ['committee', 'finance_admin', 'super_admin'];
 
-    protected $fillable = ['name', 'phone', 'email', 'password', 'locale', 'status', 'notification_prefs', 'last_login_at', 'phone_verified_at'];
+    protected $fillable = ['name', 'phone', 'email', 'email_verified_at', 'password', 'locale', 'status', 'notification_prefs', 'last_login_at', 'phone_verified_at'];
 
     protected $attributes = ['status' => 'active', 'locale' => 'en'];
 
@@ -89,7 +89,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function getAppAuthenticationHolderName(): string
     {
-        return $this->phone;
+        return $this->phone ?? $this->email ?? (string) $this->id;
     }
 
     public function getAppAuthenticationRecoveryCodes(): ?array

@@ -6,6 +6,7 @@ import { Download, Trash2, LogOut, ShieldCheck } from 'lucide-vue-next';
 import { api, download } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
 import ConfirmDialog from '@/shared/ConfirmDialog.vue';
+import PhoneLink from '../components/PhoneLink.vue';
 import { useAuth } from '../store.js';
 const auth = useAuth(); const router = useRouter();
 const form = ref({ name: auth.user.name, email: auth.user.email || '', locale: auth.user.locale, notification_prefs: { sms: true, push: true, ...(auth.user.notification_prefs || {}) } });
@@ -24,7 +25,7 @@ async function logout() { await auth.logout(); router.replace('/login'); }
             <h2 class="font-serif text-xl font-bold text-forest-900">Profile</h2>
             <Field id="sname" v-model="form.name" label="Name" required :error="errors.name?.[0]" />
             <Field id="semail" v-model="form.email" label="Email (optional)" type="email" autocomplete="email" :error="errors.email?.[0]" />
-            <p class="text-sm text-muted">Phone: {{ auth.user.phone_masked }}<span v-if="auth.verified"> · Stand {{ auth.user.resident.stand }}</span></p>
+            <p class="text-sm text-muted">Phone: {{ auth.user.phone_masked || 'not added yet' }}<span v-if="auth.verified"> · Stand {{ auth.user.resident.stand }}</span></p>
             <div><label for="slocale" class="label">Language</label><select id="slocale" v-model="form.locale" class="input"><option value="en">English</option><option value="sn">Shona</option><option value="nd">Ndebele</option></select></div>
             <fieldset class="flex flex-col gap-2"><legend class="label">Notifications</legend>
                 <label class="flex items-center gap-3 text-sm"><input v-model="form.notification_prefs.sms" type="checkbox" class="size-4 accent-forest-700">SMS for updates on my requests and messages</label>
@@ -32,6 +33,7 @@ async function logout() { await auth.logout(); router.replace('/login'); }
             </fieldset>
             <button class="btn btn-gold self-start" :disabled="busy">Save</button>
         </form>
+        <PhoneLink v-if="!auth.user.has_phone" />
         <section class="card flex flex-col gap-3 p-6">
             <h2 class="flex items-center gap-2 font-serif text-xl font-bold text-forest-900"><ShieldCheck class="size-5 text-forest-700" />Your data</h2>
             <p class="text-sm text-muted">You can download everything we hold about you, or ask us to delete it.</p>

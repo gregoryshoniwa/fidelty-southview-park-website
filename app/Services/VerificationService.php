@@ -21,8 +21,16 @@ class VerificationService
         return hash_hmac('sha256', $norm, (string) config('fspra.id_hash_salt'));
     }
 
+    public static function otpKey(User $user): string
+    {
+        return $user->phone ?? 'user:'.$user->id;
+    }
+
     public function start(User $user, string $nationalId, string $standNumber): Resident
     {
+        if (! $user->phone) {
+            throw ValidationException::withMessages(['phone' => 'Add your mobile number first, so we can send you updates.']);
+        }
         $resident = $user->resident()->firstOrCreate([]);
         Consent::create([
             'user_id' => $user->id, 'purpose' => 'fidelity_verification', 'text_version' => config('fspra.consent_version'),
@@ -60,7 +68,7 @@ class VerificationService
 
             return $resident;
         }
-        $this->otp->issue($user->phone, 'verify', $result['phone'] ?? $user->phone);
+        $this->otp->issue(self::otpKey($user), 'verify', $result['phone'] ?? $user->phone);
 
         return $resident;
     }
@@ -71,7 +79,7 @@ class VerificationService
         if (! $resident || $resident->verification_status !== 'pending') {
             throw ValidationException::withMessages(['code' => 'Start verification first.']);
         }
-        $this->otp->verify($user->phone, $code, 'verify');
+        $this->otp->verify(self::otpKey($user), $code, 'verify');
         $resident->update(['verification_status' => 'verified', 'verified_at' => now()]);
         $user->assignRole('verified_resident');
         AuditLog::record('verification.completed', $resident);
