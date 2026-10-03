@@ -6,6 +6,7 @@ use App\Models\Partner;
 use App\Models\Resident;
 use App\Models\Stand;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -18,14 +19,19 @@ abstract class TestCase extends BaseTestCase
     }
 
     /** Switching users in one test = a new browser session, as in real life. */
-    public function actingAs(\Illuminate\Contracts\Auth\Authenticatable $user, $guard = null)
+    public function actingAs(Authenticatable $user, $guard = null)
     {
         if (auth()->user()?->getAuthIdentifier() !== $user->getAuthIdentifier()) {
             $this->flushSession();
             $this->app['auth']->forgetGuards();
         }
 
-        return parent::actingAs($user, $guard);
+        parent::actingAs($user, $guard);
+        if ($user instanceof User && $user->partners()->exists()) {
+            $this->withSession(['auth_via' => 'partner_2fa']);
+        }
+
+        return $this;
     }
 
     protected function resident(string $stand = '1050', bool $verified = true): User
@@ -46,7 +52,7 @@ abstract class TestCase extends BaseTestCase
     {
         $u = User::create(['name' => 'Staff '.$slug, 'phone' => '+26378'.random_int(1000000, 9999999), 'password' => 'Secret-pass-123', 'phone_verified_at' => now()]);
         $u->assignRole('partner_user');
-        Partner::where('slug', $slug)->first()->users()->attach($u->id, ['role' => 'agent']);
+        Partner::where('slug', $slug)->first()->users()->attach($u->id, ['role' => 'admin']);
 
         return $u;
     }

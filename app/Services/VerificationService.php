@@ -32,6 +32,7 @@ class VerificationService
 
         $standNumber = strtoupper(trim($standNumber));
         $result = $this->fidelity->match($nationalId, $standNumber);
+        $manual = (bool) ($result['manual'] ?? false);
         AuditLog::record('verification.match_attempt', $resident, ['stand' => $standNumber, 'matched' => $result['matched']]);
 
         if (! $result['matched']) {
@@ -49,11 +50,16 @@ class VerificationService
             'stand_id' => $stand->id,
             'national_id_hash' => self::hashId($nationalId),
             'national_id_last4' => substr(preg_replace('/[^0-9A-Za-z]/', '', $nationalId), -4),
-            'verification_status' => 'pending',
+            'verification_status' => $manual ? 'review' : 'pending',
             'fidelity_reference' => $result['reference'],
             'phone_on_file_masked' => $result['phone_masked'] ?? null,
         ])->save();
 
+        if ($manual) {
+            AuditLog::record('verification.manual_review_requested', $resident);
+
+            return $resident;
+        }
         $this->otp->issue($user->phone, 'verify', $result['phone'] ?? $user->phone);
 
         return $resident;

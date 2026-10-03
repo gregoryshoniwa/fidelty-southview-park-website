@@ -48,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
                 AppAuthentication::make()
                     ->brandName('Southview Park Committee')
                     ->recoverable(),
-            ])
+            ], isRequired: true)
             ->brandName('Southview Park Committee')
             ->brandLogo('/images/logo-96.webp')
             ->brandLogoHeight('2.5rem')

@@ -7,7 +7,7 @@
             <div class="flex justify-between"><span class="text-muted">For</span><span class="font-bold">{{ \App\Models\Payment::BILLERS[$payment->biller_code]['label'] }}</span></div>
             <div class="flex justify-between"><span class="text-muted">Reference</span><span class="font-bold">{{ $payment->biller_reference }}</span></div>
             <div class="flex justify-between text-base"><span class="text-muted">Total</span><span class="font-extrabold">{{ $payment->currency }} {{ $payment->total }}</span></div>
-            <form method="POST" action="{{ route('dev.checkout.pay', $payment->ulid) }}" class="mt-4 grid grid-cols-2 gap-2">
+            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('dev.checkout.pay', now()->addMinutes(30), ['payment' => $payment->ulid]) }}" class="mt-4 grid grid-cols-2 gap-2">
                 @csrf <input type="hidden" name="return" value="{{ $return }}">
                 <button name="outcome" value="pay" class="btn btn-gold">Pay</button>
                 <button name="outcome" value="fail" class="btn btn-outline">Decline</button>

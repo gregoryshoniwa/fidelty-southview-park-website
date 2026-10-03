@@ -28,7 +28,8 @@ class DevCheckoutController extends Controller
         app()->handle($req);
 
         $return = $request->input('return');
-        $safe = is_string($return) && str_starts_with($return, url('/')) ? $return : url('/app/receipts');
+        $host = is_string($return) ? parse_url($return, PHP_URL_HOST) : null;
+        $safe = $host && $host === $request->getHost() ? $return : url('/app/receipts');
 
         return redirect()->to($safe);
     }

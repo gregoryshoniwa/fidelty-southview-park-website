@@ -11,6 +11,7 @@ use App\Models\Notice;
 use App\Models\Order;
 use App\Models\PagePost;
 use App\Models\Partner;
+use App\Models\Payment;
 use App\Models\Poll;
 use App\Models\Product;
 use App\Models\SchoolInvoice;
@@ -19,6 +20,7 @@ use App\Models\Vote;
 use App\Services\PaymentService;
 use App\Services\Reference;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class CommunityController extends Controller
@@ -115,7 +117,9 @@ class CommunityController extends Controller
 
     public function postReport(Request $request, PagePost $post)
     {
-        $post->increment('reported_count');
+        if (Cache::add('report:'.$post->id.':'.$request->user()->id, 1, now()->addYear())) {
+            $post->increment('reported_count');
+        }
         AuditLog::record('post.reported', $post);
 
         return response()->json(['ok' => true]);
@@ -151,6 +155,9 @@ class CommunityController extends Controller
     {
         $resident = $request->user()->resident;
         abort_unless($invoice->resident_id === $resident->id && $invoice->status !== 'paid', 404);
+        if ($invoice->payment_id && Payment::whereKey($invoice->payment_id)->where('status', 'pending')->where('created_at', '>', now()->subMinutes(30))->exists()) {
+            return response()->json(['message' => 'A payment for this invoice is already in progress.'], 409);
+        }
         $payment = $payments->create($resident, 'school', $invoice->learner_ref, (float) $invoice->amount, $invoice->currency, null, 'school');
         $payment->update(['partner_id' => $invoice->partner_id]);
         $invoice->update(['payment_id' => $payment->id]);

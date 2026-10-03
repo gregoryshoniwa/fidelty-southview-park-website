@@ -83,6 +83,15 @@ class PaymentService
             if (! $payment || in_array($payment->status, ['paid', 'refunded'], true)) {
                 return $payment;
             }
+            if (($data['status'] ?? '') === 'paid' && config('fspra.tncb.driver') === 'http') {
+                // Confirm with the bank before releasing tokens or marking bills paid.
+                $confirmed = $this->gateway->queryStatus($payment->gateway_reference);
+                if (($confirmed['status'] ?? '') !== 'paid') {
+                    AuditLog::record('payment.unconfirmed_webhook', $payment);
+
+                    return $payment;
+                }
+            }
             if (($data['status'] ?? '') !== 'paid') {
                 $payment->update(['status' => 'failed', 'gateway_payload' => $data]);
                 AuditLog::record('payment.failed', $payment);

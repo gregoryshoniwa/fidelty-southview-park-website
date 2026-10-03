@@ -21,12 +21,10 @@ class AuthController extends Controller
         $data = $request->validate(['phone' => ['required', 'string', 'max:20']]);
         $phone = Phone::normalise($data['phone']) ?? throw ValidationException::withMessages(['phone' => 'Enter a valid Zimbabwean mobile number, for example 077 123 4567.']);
         $this->otp->issue($phone, 'login');
-        $exists = User::where('phone', $phone)->exists();
 
         return response()->json([
             'sent' => true,
             'phone_masked' => Phone::mask($phone),
-            'new_account' => ! $exists,
             'dev_code' => app()->environment('local') ? cache("otp:last:$phone:login") : null,
         ]);
     }
@@ -40,17 +38,21 @@ class AuthController extends Controller
             'accept_terms' => ['nullable', 'boolean'],
         ]);
         $phone = Phone::normalise($data['phone']) ?? throw ValidationException::withMessages(['phone' => 'Invalid number.']);
-        $this->otp->verify($phone, $data['code'], 'login');
-
         $user = User::where('phone', $phone)->first();
+        $needsDetails = ! $user && (empty($data['name']) || empty($data['accept_terms']));
+        // Check the code first; keep it valid while a new resident adds their name.
+        $this->otp->verify($phone, $data['code'], 'login', consume: ! $needsDetails);
+        if ($needsDetails) {
+            throw ValidationException::withMessages(['name' => 'Enter your name and accept the terms to create your account.']);
+        }
         if (! $user) {
-            if (empty($data['name']) || empty($data['accept_terms'])) {
-                throw ValidationException::withMessages(['name' => 'Enter your name and accept the terms to create your account.']);
-            }
             $user = User::create(['name' => strip_tags($data['name']), 'phone' => $phone, 'phone_verified_at' => now(), 'notification_prefs' => ['sms' => true, 'push' => true]]);
             $user->assignRole('resident');
             $user->resident()->create([]);
             AuditLog::record('user.registered', $user, [], $user);
+        }
+        if ($user->isCommittee() || $user->partners()->exists()) {
+            throw ValidationException::withMessages(['phone' => 'Committee and partner accounts sign in through their own portals.']);
         }
         if (($user->status ?? 'active') !== 'active') {
             throw ValidationException::withMessages(['phone' => 'This account is suspended. Write to the committee.']);

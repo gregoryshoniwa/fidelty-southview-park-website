@@ -31,7 +31,7 @@ class ResidentResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    public const VERIFICATION = ['unverified' => 'Unverified', 'pending' => 'Pending', 'verified' => 'Verified'];
+    public const VERIFICATION = ['unverified' => 'Unverified', 'review' => 'Awaiting committee check', 'pending' => 'Code sent', 'verified' => 'Verified'];
 
     public static function canCreate(): bool
     {
@@ -71,7 +71,7 @@ class ResidentResource extends Resource
                 TextColumn::make('stand.stand_number')->label('Stand')->searchable()->placeholder('-'),
                 TextColumn::make('verification_status')->label('Verification')->badge()
                     ->formatStateUsing(fn ($s) => self::VERIFICATION[$s] ?? $s)
-                    ->color(fn ($s) => match ($s) { 'verified' => 'success', 'pending' => 'warning', default => 'gray' }),
+                    ->color(fn ($s) => match ($s) { 'verified' => 'success', 'pending', 'review' => 'warning', default => 'gray' }),
                 TextColumn::make('verified_at')->dateTime('j M Y')->sortable()->placeholder('-'),
                 TextColumn::make('user.status')->label('Account')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
                 TextColumn::make('created_at')->label('Registered')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
@@ -83,6 +83,38 @@ class ResidentResource extends Resource
                     ->query(fn (Builder $query, array $data) => filled($data['value']) ? $query->whereHas('user', fn ($u) => $u->where('status', $data['value'])) : $query),
             ])
             ->recordActions([
+                Action::make('confirmStand')
+                    ->label('Confirm stand')
+                    ->icon(Heroicon::OutlinedCheckBadge)
+                    ->color('success')
+                    ->visible(fn (Resident $record) => $record->verification_status === 'review')
+                    ->requiresConfirmation()
+                    ->modalDescription('Confirm only after checking Fidelity Life records show this person owns this stand.')
+                    ->action(function (Resident $record) {
+                        $taken = Resident::where('stand_id', $record->stand_id)->where('verification_status', 'verified')->where('id', '!=', $record->id)->exists();
+                        if ($taken) {
+                            Notification::make()->title('This stand is already verified to another resident')->danger()->send();
+
+                            return;
+                        }
+                        $record->update(['verification_status' => 'verified', 'verified_at' => now()]);
+                        $record->user->assignRole('verified_resident');
+                        AuditLog::record('verification.confirmed_by_committee', $record);
+                        app(\App\Services\NotificationService::class)->notify($record->user, 'Your stand is verified', 'Stand '.$record->stand?->stand_number.' is linked to your account. Every service is now open to you.', '/app', 'verification');
+                        Notification::make()->title('Stand confirmed and resident notified')->success()->send();
+                    }),
+                Action::make('rejectStand')
+                    ->label('Reject')
+                    ->icon(Heroicon::OutlinedXCircle)
+                    ->color('danger')
+                    ->visible(fn (Resident $record) => $record->verification_status === 'review')
+                    ->requiresConfirmation()
+                    ->action(function (Resident $record) {
+                        $record->update(['verification_status' => 'unverified', 'stand_id' => null]);
+                        AuditLog::record('verification.rejected_by_committee', $record);
+                        app(\App\Services\NotificationService::class)->notify($record->user, 'We could not confirm your stand', 'Fidelity Life records did not match. Write to the committee from the app and we will help.', '/app/inbox/new', 'verification');
+                        Notification::make()->title('Rejected and resident notified')->success()->send();
+                    }),
                 ActionGroup::make([
                     Action::make('suspend')
                         ->label('Suspend user')

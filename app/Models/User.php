@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasName
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, HasName
 {
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
@@ -63,6 +64,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->status === 'active' && $this->isCommittee() && $this->password !== null;
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return asset('images/avatar.svg');
     }
 
     public function getFilamentName(): string

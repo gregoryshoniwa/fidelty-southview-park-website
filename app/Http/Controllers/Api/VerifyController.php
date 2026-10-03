@@ -21,7 +21,7 @@ class VerifyController extends Controller
 
         $resident = $this->verify->start($request->user(), $data['national_id'], $data['stand_number']);
 
-        return response()->json(['status' => 'pending', 'phone_on_file_masked' => $resident->phone_on_file_masked,
+        return response()->json(['status' => $resident->verification_status, 'phone_on_file_masked' => $resident->phone_on_file_masked,
             'dev_code' => app()->environment('local') ? cache('otp:last:'.$request->user()->phone.':verify') : null]);
     }
 

@@ -159,8 +159,14 @@ class SiteController extends Controller
         if (! $phone) {
             return back()->withErrors(['phone' => 'Enter a valid mobile number.'])->withInput();
         }
-        Subscriber::updateOrCreate(['phone' => $phone], ['categories' => $data['categories'] ?? ['urgent', 'services', 'deeds', 'security']]);
-        app(SmsService::class)->send($phone, 'You are subscribed to official Southview Park notices. Reply STOP to unsubscribe.', 'subscribe');
+        $sub = Subscriber::firstOrNew(['phone' => $phone]);
+        $isNew = ! $sub->exists;
+        $sub->categories = $data['categories'] ?? ['urgent', 'services', 'deeds', 'security'];
+        $sub->save();
+        // One confirmation SMS per number, ever: the form cannot be used to pump SMS.
+        if ($isNew) {
+            app(SmsService::class)->send($phone, 'You are subscribed to official Southview Park notices. Reply STOP to unsubscribe.', 'subscribe');
+        }
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Subscribed. Official notices will reach you by SMS.']);
     }

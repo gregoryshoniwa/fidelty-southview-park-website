@@ -58,7 +58,6 @@ class CommunityAndAccountTest extends TestCase
         app(AssistantService::class)->rebuildKnowledge();
         $r = $this->postJson('/api/assistant/chat', ['message' => 'Who is processing the title deeds?'])->assertOk();
         $this->assertStringContainsString('Marufu', $r->json('reply'));
-        $this->postJson('/api/assistant/live', ['consent' => true])->assertStatus(503);
         $u = $this->resident('1145');
         $this->actingAs($u)->postJson('/api/assistant/escalate', ['session_id' => $r->json('session_id'), 'summary' => 'Need help with my deed'])->assertCreated();
     }

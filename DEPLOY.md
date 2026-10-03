@@ -29,7 +29,7 @@ cd ~/fspra
 cp .env.example .env
 nano .env                       # fill DB_*, MAIL_*, keep PAYMENTS_LIVE=false
 php artisan key:generate
-php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"   # paste as ID_HASH_SALT (never change it later)
+php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"   # paste as ID_HASH_SALT (never change it later; the app refuses to start without it)
 php artisan migrate --force
 php artisan db:seed --force     # roles, partners, services, pages, schools, house ads (no demo users in production)
 php artisan storage:link
@@ -39,6 +39,14 @@ php artisan fspra:admin +263771234567 chair@example.com "Chairperson Name"
 ```
 
 Use cPanel > Terminal (or SSH). If Terminal is disabled, ask the host to enable it once.
+
+### Before go-live (security review sign-off)
+
+- **SMS provider**: set `SMS_DRIVER=http` with your Econet/NetOne bulk SMS account. Without it nobody can receive sign-in codes. `SMS_DAILY_CAP` stops SMS-pumping fraud.
+- **Committee sign-in**: committee members sign in at `/admin` with email, password and an authenticator app (two-factor is mandatory; they are asked to set it up on first sign-in). Committee and partner phone numbers cannot use the resident SMS sign-in.
+- **Stand verification**: `FIDELITY_DRIVER=manual` until Fidelity Life's API is connected. Residents submit ID and stand; the committee checks Fidelity's records and clicks **Confirm stand** in Admin > Community > Residents.
+- **Payments**: keep `PAYMENTS_LIVE=false`. When the bank is ready set `TNCB_DRIVER=http`, a random `TNCB_WEBHOOK_SECRET` of at least 32 characters, then `PAYMENTS_LIVE=true`. Webhooks are verified by HMAC and then confirmed with the bank before anything is released.
+- **Proxies**: leave `TRUSTED_PROXIES` empty unless you put Cloudflare in front (then list Cloudflare's IP ranges).
 
 ## 5. Cron (cPanel > Cron Jobs)
 

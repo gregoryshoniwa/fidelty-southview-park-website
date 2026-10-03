@@ -118,7 +118,7 @@ function onOpenChange(v) { open.value = v; if (!v && voice.value.on) stopVoice()
                     <form class="flex items-end gap-2" @submit.prevent="send">
                         <label for="assistant-input" class="sr-only">Your question</label>
                         <input id="assistant-input" v-model="input" maxlength="800" autocomplete="off" placeholder="Ask about a service or fee" class="input min-h-11 flex-1" :disabled="voice.on">
-                        <button v-if="voiceAvailable && !voice.on" type="button" class="btn btn-outline min-h-11 px-3" aria-label="Talk to the assistant" @click="startVoice"><Mic class="size-4" /></button>
+                        <button v-if="voiceAvailable && signedIn && !voice.on" type="button" class="btn btn-outline min-h-11 px-3" aria-label="Talk to the assistant" @click="startVoice"><Mic class="size-4" /></button>
                         <button type="submit" class="btn btn-gold min-h-11 px-3" :disabled="busy || !input.trim()" aria-label="Send"><Send class="size-4" /></button>
                     </form>
                     <button type="button" class="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-bold text-forest-700 hover:underline disabled:opacity-60" :disabled="escalating || !!escalated" @click="escalate">

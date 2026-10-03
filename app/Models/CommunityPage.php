@@ -43,7 +43,7 @@ class CommunityPage extends Model
         return 'slug';
     }
 
-    public function partner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
     }

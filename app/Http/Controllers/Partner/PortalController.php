@@ -233,7 +233,7 @@ class PortalController extends Controller
         }
         AuditLog::record('partner.invoice_created', $inv);
 
-        return response()->json(['id' => $inv->id, 'linked_to_parent' => (bool) $resident], 201);
+        return response()->json(['id' => $inv->id], 201);
     }
 
     public function incidents(Request $request)
@@ -241,7 +241,7 @@ class PortalController extends Controller
         $p = $this->partner($request);
         $subs = SecuritySubscription::where('partner_id', $p->id)->pluck('resident_id');
 
-        return response()->json(['data' => Incident::where(fn ($w) => $w->where('partner_id', $p->id)->orWhereIn('resident_id', $subs))
+        return response()->json(['data' => Incident::where(fn ($w) => $w->where('partner_id', $p->id)->orWhere(fn ($x) => $x->whereNull('partner_id')->whereIn('resident_id', $subs)))
             ->with('resident.user', 'resident.stand')->latest()->take(100)->get()->map(fn ($i) => [
                 'reference' => $i->reference, 'category' => $i->category, 'location' => $i->location, 'description' => $i->description, 'status' => $i->status,
                 'resident' => $i->resident->user->name, 'stand' => $i->resident->stand?->stand_number, 'at' => $i->created_at->toIso8601String(),
@@ -252,7 +252,7 @@ class PortalController extends Controller
     {
         $p = $this->partner($request);
         $subs = SecuritySubscription::where('partner_id', $p->id)->pluck('resident_id')->all();
-        abort_unless($incident->partner_id === $p->id || in_array($incident->resident_id, $subs, true), 404);
+        abort_unless($incident->partner_id === $p->id || ($incident->partner_id === null && in_array($incident->resident_id, $subs, true)), 404);
         $data = $request->validate(['status' => ['required', Rule::in(['open', 'responding', 'resolved'])]]);
         $incident->update(['status' => $data['status'], 'partner_id' => $p->id]);
         $notify->notify($incident->resident->user, 'Incident '.$incident->reference.' is '.$data['status'], $p->name.' updated your report.', '/app/security', 'incident');
@@ -271,7 +271,7 @@ class PortalController extends Controller
             $out = fopen('php://output', 'w');
             fputcsv($out, ['reference', 'service', 'resident', 'stand', 'status', 'step', 'opened', 'updated']);
             foreach ($rows as $r) {
-                fputcsv($out, array_map(fn ($v) => preg_match('/^[=+\-@]/', (string) $v) ? "'".$v : $v, [
+                fputcsv($out, array_map(fn ($v) => preg_match('/^[=+\-@\t\r]/', (string) $v) ? "'".$v : $v, [
                     $r->reference, $r->service->name, $r->resident->user->name, $r->resident->stand?->stand_number, $r->status, $r->step,
                     $r->created_at->toDateString(), $r->updated_at->toDateString(),
                 ]));

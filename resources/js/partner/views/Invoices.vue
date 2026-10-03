@@ -35,8 +35,7 @@ async function save() {
         const body = { ...form, amount: form.amount === '' ? null : Number(form.amount), parent_stand: form.parent_stand.trim() || null };
         const res = await papi('/invoices', { method: 'POST', body });
         open.value = false;
-        if (res.linked_to_parent) toast.success('Invoice created and sent to the parent');
-        else toast.success('Invoice created', { description: form.parent_stand ? 'No verified parent found on that stand, so nobody was notified.' : 'Not linked to a parent. Add a stand number to notify one.' });
+        toast.success('Invoice created', { description: form.parent_stand ? 'If a verified parent lives on that stand, they have been notified.' : 'Add a stand number to notify a parent.' });
         load();
     } catch (e) {
         if (e instanceof ApiError && e.status === 422) {

@@ -15,7 +15,7 @@ async function sendCode() {
     busy.value = true; errors.value = {};
     try {
         const r = await api('/auth/otp', { method: 'POST', body: { phone: phone.value } });
-        isNew.value = r.new_account; masked.value = r.phone_masked; devCode.value = r.dev_code; step.value = 'code';
+        masked.value = r.phone_masked; devCode.value = r.dev_code; step.value = 'code';
         toast.success('Code sent to ' + r.phone_masked);
     } catch (e) { errors.value = e.errors || {}; } finally { busy.value = false; }
 }
@@ -26,7 +26,7 @@ async function verify() {
         auth.set(r.user);
         const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : (r.user.resident?.verification_status === 'verified' ? '/' : '/verify');
         router.replace(next);
-    } catch (e) { errors.value = e.errors || {}; } finally { busy.value = false; }
+    } catch (e) { errors.value = e.errors || {}; if (e.errors?.name) isNew.value = true; } finally { busy.value = false; }
 }
 </script>
 

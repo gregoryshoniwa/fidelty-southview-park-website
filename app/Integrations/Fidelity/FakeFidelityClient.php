@@ -14,6 +14,9 @@ class FakeFidelityClient implements FidelityClient
 {
     public function match(string $nationalId, string $standNumber): array
     {
+        if (app()->isProduction()) {
+            throw new \RuntimeException('The fake Fidelity driver cannot be used in production. Use FIDELITY_DRIVER=manual or http.');
+        }
         $stand = Stand::where('stand_number', $standNumber)->first();
         if (! $stand || ! preg_match('/^\d{2}-?\d{6,7}-?[A-Z]-?\d{2}$/i', $nationalId)) {
             return ['matched' => false];

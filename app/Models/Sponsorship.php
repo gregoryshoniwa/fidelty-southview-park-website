@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sponsorship extends Model
 {
@@ -29,7 +30,7 @@ class Sponsorship extends Model
             ->whereDate('starts_on', '<=', today())->whereDate('ends_on', '>=', today());
     }
 
-    public function partner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
     }

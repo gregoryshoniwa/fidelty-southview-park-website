@@ -9,7 +9,6 @@ Route::post('/auth/otp', [Api\AuthController::class, 'requestOtp'])->middleware(
 Route::post('/auth/verify', [Api\AuthController::class, 'verifyOtp'])->middleware('throttle:20,1');
 Route::get('/assistant/config', [Api\AssistantController::class, 'config']);
 Route::post('/assistant/chat', [Api\AssistantController::class, 'chat'])->middleware('throttle:assistant');
-Route::post('/assistant/live', [Api\AssistantController::class, 'live'])->middleware('throttle:assistant');
 Route::post('/assistant/transcript', [Api\AssistantController::class, 'transcript'])->middleware('throttle:assistant');
 Route::get('/billers', [Api\PaymentController::class, 'billers']);
 Route::post('/payments/notify-me', [Api\PaymentController::class, 'notifyMe'])->middleware('auth:sanctum');
@@ -22,6 +21,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/me/export', [Api\AccountController::class, 'export']);
     Route::post('/me/delete-request', [Api\AccountController::class, 'requestDeletion']);
     Route::post('/assistant/escalate', [Api\AssistantController::class, 'escalate']);
+    Route::post('/assistant/live', [Api\AssistantController::class, 'live'])->middleware('throttle:5,1440');
 
     Route::post('/verify/start', [Api\VerifyController::class, 'start'])->middleware('throttle:10,60');
     Route::post('/verify/confirm', [Api\VerifyController::class, 'confirm'])->middleware('throttle:20,60');
@@ -87,7 +87,7 @@ Route::prefix('partner')->group(function () {
         Route::post('/broadcasts', [Partner\PortalController::class, 'broadcast'])->middleware(['partner:broadcast', 'throttle:5,60']);
         Route::get('/settlements', [Partner\PortalController::class, 'settlements'])->middleware('partner:settlements');
         Route::get('/invoices', [Partner\PortalController::class, 'invoices'])->middleware('partner:invoices');
-        Route::post('/invoices', [Partner\PortalController::class, 'storeInvoice'])->middleware('partner:invoices');
+        Route::post('/invoices', [Partner\PortalController::class, 'storeInvoice'])->middleware(['partner:invoices', 'throttle:60,60']);
         Route::get('/incidents', [Partner\PortalController::class, 'incidents'])->middleware('partner:incidents');
         Route::patch('/incidents/{incident}', [Partner\PortalController::class, 'updateIncident'])->middleware('partner:incidents');
         Route::get('/export', [Partner\PortalController::class, 'export'])->middleware(['partner:export', 'throttle:10,60']);

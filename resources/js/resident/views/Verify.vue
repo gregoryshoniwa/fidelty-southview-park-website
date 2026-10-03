@@ -8,7 +8,7 @@ import { useAuth } from '../store.js';
 
 const auth = useAuth(); const router = useRouter(); const route = useRoute();
 const status = computed(() => auth.user?.resident?.verification_status);
-const step = ref(status.value === 'verified' ? 3 : status.value === 'pending' ? 2 : 1);
+const step = ref(status.value === 'verified' ? 3 : status.value === 'pending' ? 2 : status.value === 'review' ? 4 : 1);
 const nid = ref(''); const stand = ref(''); const consent = ref(false); const code = ref('');
 const masked = ref(auth.user?.resident?.phone_on_file_masked || ''); const devCode = ref(null);
 const busy = ref(false); const errors = ref({});
@@ -17,6 +17,7 @@ async function start() {
     busy.value = true; errors.value = {};
     try {
         const r = await api('/verify/start', { method: 'POST', body: { national_id: nid.value, stand_number: stand.value, consent: consent.value } });
+        if (r.status === 'review') { await auth.load(true); step.value = 4; return; }
         masked.value = r.phone_on_file_masked; devCode.value = r.dev_code; step.value = 2;
     } catch (e) { errors.value = e.errors || {}; } finally { busy.value = false; }
 }
@@ -32,9 +33,9 @@ const next = computed(() => (typeof route.query.next === 'string' && route.query
     <div class="mx-auto max-w-lg">
         <div class="overflow-hidden rounded-[14px] bg-forest-900 p-6 text-cream">
             <div class="flex gap-2" aria-hidden="true"><span v-for="i in 3" :key="i" class="h-1.5 flex-1 rounded-full" :class="i <= step ? 'bg-gold-500' : 'bg-white/20'" /></div>
-            <p class="eyebrow mt-4 text-gold-500">Verify me · step {{ step }} of 3</p>
-            <h2 class="mt-2 font-serif text-3xl font-bold">{{ ['Prove your stand is yours', 'Check your phone', 'You are verified'][step - 1] }}</h2>
-            <p class="mt-2 text-cream/80">{{ ['Your ID and stand number are matched against Fidelity Life records. Two minutes, no paperwork.', 'Fidelity Life sent a one-time code to the phone number on your Agreement of Sale.', 'Your stand is linked. Every service is now open to you.'][step - 1] }}</p>
+            <p class="eyebrow mt-4 text-gold-500">Verify me · step {{ Math.min(step, 3) }} of 3</p>
+            <h2 class="mt-2 font-serif text-3xl font-bold">{{ ['Prove your stand is yours', 'Check your phone', 'You are verified', 'Being checked'][step - 1] }}</h2>
+            <p class="mt-2 text-cream/80">{{ ['Your ID and stand number are matched against Fidelity Life records. Two minutes, no paperwork.', 'Fidelity Life sent a one-time code to the phone number on your Agreement of Sale.', 'Your stand is linked. Every service is now open to you.', 'The committee is confirming your stand with Fidelity Life records. You will get an SMS, usually within two working days.'][step - 1] }}</p>
         </div>
 
         <form v-if="step === 1" class="card mt-5 flex flex-col gap-5 p-6" @submit.prevent="start">
@@ -57,6 +58,7 @@ const next = computed(() => (typeof route.query.next === 'string' && route.query
             <button type="button" class="btn btn-quiet" @click="step = 1">Start again</button>
         </form>
 
+        <div v-else-if="step === 4" class="card mt-5 flex flex-col gap-3 p-6 text-sm text-muted"><p>Stand <strong class="text-forest-900">{{ auth.user?.resident?.stand }}</strong> is waiting for confirmation. Meanwhile you can read notices and write to the committee.</p><RouterLink to="/inbox/new" class="btn btn-outline self-start">Write to the committee</RouterLink></div>
         <div v-else class="card mt-5 flex flex-col items-center gap-4 p-6 text-center">
             <span class="flex size-20 items-center justify-center rounded-full border-[3px] border-gold-500 bg-forest-100 text-forest-700 animate-rise"><Check class="size-10" :stroke-width="2.6" /></span>
             <p class="font-serif text-2xl font-bold text-forest-900">Welcome, verified resident</p>

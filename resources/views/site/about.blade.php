@@ -3,7 +3,7 @@
 @include('partials.page-hero', ['eyebrow' => 'About us', 'heading' => 'A service-first association, run by rules you can read', 'lead' => 'Seven founding members run the association for 12 months. After that, verified residents vote to confirm or replace each role.', 'crumbs' => [['About', null]]])
 <div class="wrap grid gap-12 py-14 lg:grid-cols-[1fr_340px]">
     <div class="flex flex-col gap-14">
-        @if ($page)<article class="prose-site">{!! $page->body !!}</article>@endif
+        @if ($page)<article class="prose-site">{!! \Illuminate\Support\Str::sanitizeHtml((string) $page->body) !!}</article>@endif
         <section aria-labelledby="committee-title">
             <h2 id="committee-title" class="mb-6 font-serif text-3xl font-bold text-forest-900">The committee</h2>
             @if ($members->isEmpty())

@@ -58,7 +58,7 @@ class AssistantController extends Controller
         $data = $request->validate(['session_id' => ['required', 'string', 'max:64', 'alpha_dash'], 'summary' => ['required', 'string', 'min:5', 'max:1500']]);
         $resident = $request->user()?->resident;
         abort_unless($resident, 401, 'Sign in so the committee can reply to you privately.');
-        $conv = AssistantConversation::where('session_id', $data['session_id'])->first();
+        $conv = AssistantConversation::where('session_id', $data['session_id'])->where('user_id', $request->user()->id)->first();
         $transcript = collect($conv?->transcript ?? [])->take(-12)->map(fn ($t) => strtoupper($t['role']).': '.$t['text'])->implode("\n");
         $thread = $messaging->openThread($resident, 'Question from the assistant', strip_tags($data['summary']).($transcript ? "\n\n--- Assistant transcript ---\n".$transcript : ''), null, null, 'assistant');
         $conv?->update(['escalated_thread_id' => $thread->id]);

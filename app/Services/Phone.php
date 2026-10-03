@@ -20,7 +20,7 @@ final class Phone
         if (strlen($d) === 9 && str_starts_with($d, '7')) {
             $d = '263'.$d;
         }
-        if (! preg_match('/^2637[1378]\d{7}$/', $d) && ! preg_match('/^\d{10,15}$/', $d)) {
+        if (! preg_match('/^2637[1378]\d{7}$/', $d)) {
             return null;
         }
 

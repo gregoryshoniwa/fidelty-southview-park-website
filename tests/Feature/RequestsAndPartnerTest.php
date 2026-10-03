@@ -98,7 +98,7 @@ class RequestsAndPartnerTest extends TestCase
     {
         $staff = $this->partnerUser('marufu-attorneys');
         $this->actingAs($staff)->getJson('/api/partner/settlements')->assertForbidden();
-        $this->actingAs($this->resident('1117'))->getJson('/api/partner/requests')->assertForbidden();
+        $this->actingAs($this->resident('1117'))->getJson('/api/partner/requests')->assertUnauthorized();
     }
 
     public function test_export_neutralises_spreadsheet_formulas(): void

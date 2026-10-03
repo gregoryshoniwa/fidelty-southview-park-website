@@ -33,6 +33,9 @@ class FakeGateway implements PaymentGateway
 
     public function verifySignature(string $payload, ?string $signature): bool
     {
+        if (strlen((string) config('fspra.tncb.webhook_secret')) < 32) {
+            return false; // never accept webhooks signed with a weak or empty secret
+        }
         $expected = hash_hmac('sha256', $payload, (string) config('fspra.tncb.webhook_secret'));
 
         return $signature !== null && hash_equals($expected, $signature);

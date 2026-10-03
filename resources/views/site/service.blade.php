@@ -27,7 +27,7 @@
                 <div><p class="font-extrabold text-forest-900">Coming soon</p><p class="text-[15px] text-muted">{{ $service->slug === 'pay-bills' ? 'Online bill payments open once the TN CyberTech Bank gateway is connected. Subscribe to notices and we will tell you the day it opens.' : 'This service opens in phase '.$service->phase.'. We open each phase only after the partner has signed and the previous phase works.' }}</p></div>
             </div>
         @endif
-        {!! $service->body !!}
+        {!! \Illuminate\Support\Str::sanitizeHtml((string) $service->body) !!}
         @if ($faqs->isNotEmpty())
             <h2>Questions</h2>
             @foreach ($faqs as $f)<h3>{{ $f->question }}</h3><p>{{ $f->answer }}</p>@endforeach

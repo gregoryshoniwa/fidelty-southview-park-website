@@ -3,7 +3,7 @@
 @include('partials.page-hero', ['eyebrow' => 'Advertise', 'heading' => 'Reach every verified household in Southview Park', 'lead' => 'Few sponsors, high attention. Every placement is clearly labelled and never appears inside payment or document screens.', 'crumbs' => [['Advertise', null]]])
 <div class="wrap grid gap-12 py-14 lg:grid-cols-[1fr_340px]">
     <div>
-        @if ($page)<div class="prose-site mb-10">{!! $page->body !!}</div>@endif
+        @if ($page)<div class="prose-site mb-10">{!! \Illuminate\Support\Str::sanitizeHtml((string) $page->body) !!}</div>@endif
         <div class="card overflow-x-auto">
             <table class="w-full min-w-[560px] text-left text-sm">
                 <thead><tr class="border-b border-forest-900 text-xs uppercase tracking-wider text-muted"><th class="p-4">Placement</th><th class="p-4">Size</th><th class="p-4">Where</th></tr></thead>

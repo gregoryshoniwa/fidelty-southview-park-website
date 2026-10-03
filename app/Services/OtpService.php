@@ -33,7 +33,7 @@ class OtpService
         return $otp;
     }
 
-    public function verify(string $phone, string $code, string $purpose = 'login'): void
+    public function verify(string $phone, string $code, string $purpose = 'login', bool $consume = true): void
     {
         $otp = OtpCode::where('phone', $phone)->where('purpose', $purpose)->whereNull('consumed_at')->latest('id')->first();
 
@@ -48,6 +48,8 @@ class OtpService
             $otp->increment('attempts');
             throw ValidationException::withMessages(['code' => 'That code is not correct.']);
         }
-        $otp->update(['consumed_at' => now()]);
+        if ($consume) {
+            $otp->update(['consumed_at' => now()]);
+        }
     }
 }

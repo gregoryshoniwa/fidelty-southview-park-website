@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Sponsorship;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
@@ -19,7 +20,7 @@ class PublicSiteTest extends TestCase
             ['/complaints'], ['/constitution'], ['/app'], ['/app/login'], ['/partner/login']];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('pages')]
+    #[DataProvider('pages')]
     public function test_page_renders_with_security_headers(string $url): void
     {
         $res = $this->get($url)->assertOk();

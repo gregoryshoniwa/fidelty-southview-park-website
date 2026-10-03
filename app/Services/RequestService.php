@@ -96,7 +96,7 @@ class RequestService
     {
         AuditLog::record('document.viewed', $doc, ['kind' => $doc->kind], $viewer);
 
-        return Storage::disk('local')->response($doc->storage_path, $doc->original_name, [
+        return Storage::disk('local')->download($doc->storage_path, $doc->original_name, [
             'Content-Type' => $doc->mime,
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',

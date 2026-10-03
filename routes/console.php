@@ -2,8 +2,10 @@
 
 use App\Models\AssistantConversation;
 use App\Models\AuditLog;
+use App\Models\Notice;
 use App\Models\OtpCode;
 use App\Models\SmsLog;
+use App\Models\Subscriber;
 use App\Models\User;
 use App\Services\AssistantService;
 use App\Services\LedgerService;
@@ -36,10 +38,10 @@ Artisan::command('fspra:verify-ledger', function (LedgerService $ledger) {
 })->purpose('Check the ledger hash chain');
 
 Artisan::command('fspra:notice-sms', function (SmsService $sms) {
-    foreach (\App\Models\Notice::published()->where('send_sms', true)->whereNull('notified_at')->get() as $n) {
+    foreach (Notice::published()->where('send_sms', true)->whereNull('notified_at')->get() as $n) {
         $n->update(['notified_at' => now()]);
         $text = 'Southview Park notice: '.$n->title.'. '.url('/notices/'.$n->slug);
-        \App\Models\Subscriber::query()->each(function ($sub) use ($n, $sms, $text) {
+        Subscriber::query()->each(function ($sub) use ($n, $sms, $text) {
             $cats = $sub->categories ?? [];
             if (! $cats || in_array($n->category, $cats, true) || $n->category === 'urgent') {
                 $sms->send($sub->phone, $text, 'notice', $n->category === 'urgent');

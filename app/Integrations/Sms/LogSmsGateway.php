@@ -8,7 +8,8 @@ class LogSmsGateway implements SmsGateway
 {
     public function send(string $to, string $message): ?string
     {
-        Log::channel('single')->info("[SMS to {$to}] {$message}");
+        $text = app()->isProduction() ? '['.strlen($message).' chars]' : $message;
+        Log::channel('single')->info("[SMS to {$to}] {$text}");
 
         return 'log-'.uniqid();
     }

@@ -45,6 +45,7 @@ class AuthController extends Controller
         $request->session()->forget('partner_2fa_user');
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
+        $request->session()->put('auth_via', 'partner_2fa');
         $user->update(['last_login_at' => now()]);
         AuditLog::record('partner.login', $user, [], $user);
 

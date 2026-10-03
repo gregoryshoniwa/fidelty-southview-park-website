@@ -9,6 +9,7 @@ use App\Models\KnowledgeChunk;
 use App\Models\Notice;
 use App\Models\Service;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -38,7 +39,7 @@ TXT;
             $n++;
         }
         foreach (Notice::published()->latest('published_at')->take(30)->get() as $no) {
-            KnowledgeChunk::create(['source_type' => 'notice', 'source_id' => $no->id, 'title' => $no->title, 'content' => Str::limit(strip_tags($no->body), 2000), 'url' => '/notices/'.$no->slug]);
+            KnowledgeChunk::create(['source_type' => 'notice', 'source_id' => $no->id, 'title' => $no->title, 'content' => Str::limit(strip_tags(Str::sanitizeHtml((string) $no->body)), 2000), 'url' => '/notices/'.$no->slug]);
             $n++;
         }
         foreach (CmsPage::where('published', true)->get() as $p) {
@@ -92,6 +93,9 @@ TXT;
     public function answer(string $sessionId, string $question, ?int $userId = null): array
     {
         $conv = AssistantConversation::firstOrCreate(['session_id' => $sessionId], ['user_id' => $userId, 'mode' => 'text', 'transcript' => []]);
+        if ($conv->user_id !== $userId) {
+            $conv = AssistantConversation::create(['session_id' => (string) Str::ulid(), 'user_id' => $userId, 'mode' => 'text', 'transcript' => []]);
+        }
         $hits = $this->retrieve($question);
         $sources = $hits->map(fn ($c) => ['title' => $c->title, 'url' => $c->url])->values()->all();
 
@@ -128,15 +132,24 @@ TXT;
     /** Ephemeral token for the browser to open a Gemini Live (voice) session directly. */
     public function liveToken(string $sessionId, ?int $userId): ?array
     {
-        if (! $this->enabled()) {
+        if (! $this->enabled() || ! Cache::add('live-day:'.today()->toDateString(), 0, 86400) && Cache::increment('live-day:'.today()->toDateString()) > (int) config('fspra.gemini.daily_live_sessions')) {
             return null;
         }
+        $system = self::SYSTEM_PROMPT."\n\nCONTEXT:\n".$this->retrieve('services fees verify deed pay notices', 8)->map(fn ($c) => "## {$c->title}\n".Str::limit($c->content, 500))->implode("\n\n");
         $res = Http::timeout(15)->withHeaders(['x-goog-api-key' => config('fspra.gemini.api_key')])->post(
             'https://generativelanguage.googleapis.com/v1alpha/auth_tokens',
             [
                 'uses' => 1,
                 'expireTime' => now()->addMinutes(30)->toIso8601ZuluString(),
                 'newSessionExpireTime' => now()->addMinutes(2)->toIso8601ZuluString(),
+                // Lock the token to our model and instructions so it cannot be reused for anything else.
+                'bidiGenerateContentSetup' => [
+                    'model' => 'models/'.config('fspra.gemini.live_model'),
+                    'generationConfig' => ['responseModalities' => ['AUDIO']],
+                    'systemInstruction' => ['parts' => [['text' => $system]]],
+                    'inputAudioTranscription' => (object) [],
+                    'outputAudioTranscription' => (object) [],
+                ],
             ]
         );
         if (! $res->successful()) {
@@ -149,7 +162,7 @@ TXT;
         return [
             'token' => $res->json('name'),
             'model' => config('fspra.gemini.live_model'),
-            'system_instruction' => self::SYSTEM_PROMPT."\n\nCONTEXT:\n".$this->retrieve('services fees verify deed pay notices', 8)->map(fn ($c) => "## {$c->title}\n".Str::limit($c->content, 500))->implode("\n\n"),
+            'system_instruction' => $system,
         ];
     }
 

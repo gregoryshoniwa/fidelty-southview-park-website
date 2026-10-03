@@ -37,7 +37,7 @@ Route::post('/webhooks/tncb', [WebhookController::class, 'tncb'])->middleware('t
 
 if (config('fspra.tncb.driver') === 'fake' && ! app()->isProduction()) {
     Route::get('/dev/checkout/{payment}', [DevCheckoutController::class, 'show'])->middleware('signed')->name('dev.checkout');
-    Route::post('/dev/checkout/{payment}', [DevCheckoutController::class, 'pay'])->name('dev.checkout.pay');
+    Route::post('/dev/checkout/{payment}', [DevCheckoutController::class, 'pay'])->middleware('signed')->name('dev.checkout.pay');
 }
 
 Route::redirect('/login', '/app/login');

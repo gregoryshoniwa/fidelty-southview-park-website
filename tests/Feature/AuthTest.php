@@ -15,12 +15,10 @@ class AuthTest extends TestCase
 
     public function test_new_resident_signs_up_with_otp(): void
     {
-        $this->postJson('/api/auth/otp', ['phone' => '0779 999 888'])->assertOk()->assertJson(['new_account' => true]);
+        $this->postJson('/api/auth/otp', ['phone' => '0779 999 888'])->assertOk();
         $code = cache('otp:last:+263779999888:login');
         $this->postJson('/api/auth/verify', ['phone' => '0779999888', 'code' => $code])->assertStatus(422)->assertJsonValidationErrors('name');
 
-        $this->postJson('/api/auth/otp', ['phone' => '0779999888']);
-        $code = cache('otp:last:+263779999888:login');
         $this->postJson('/api/auth/verify', ['phone' => '0779999888', 'code' => $code, 'name' => '<b>Tendai</b> Moyo', 'accept_terms' => true])
             ->assertOk()->assertJsonPath('user.name', 'Tendai Moyo');
         $this->assertAuthenticated();
