@@ -50,12 +50,20 @@ class AdminPanelProvider extends PanelProvider
                     ->recoverable(),
             ], isRequired: true)
             ->brandName('Southview Park Committee')
-            ->brandLogo('/images/logo-96.webp')
-            ->brandLogoHeight('2.5rem')
+            ->brandLogo('/images/logo-128.webp')
+            ->brandLogoHeight('3.5rem')
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->font('Manrope Variable', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->favicon('/favicon.ico')
             ->colors([
-                'primary' => Color::hex('#0E4D2E'),
+                'primary' => [
+                    50 => 'oklch(0.97 0.015 155)', 100 => 'oklch(0.93 0.03 155)', 200 => 'oklch(0.86 0.06 155)',
+                    300 => 'oklch(0.74 0.09 155)', 400 => 'oklch(0.58 0.1 155)', 500 => 'oklch(0.47 0.09 155)',
+                    600 => 'oklch(0.39 0.08 155)', 700 => 'oklch(0.34 0.07 155)', 800 => 'oklch(0.29 0.06 155)',
+                    900 => 'oklch(0.25 0.05 155)', 950 => 'oklch(0.18 0.04 155)',
+                ],
                 'gray' => Color::Stone,
+                'warning' => Color::Amber,
             ])
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()

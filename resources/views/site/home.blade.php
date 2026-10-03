@@ -187,9 +187,15 @@
     <div class="wrap flex flex-col items-center gap-6 py-12">
         <h2 id="partners-title" class="eyebrow font-sans text-muted">Partners who stand behind each service</h2>
         <ul class="flex flex-wrap items-center justify-center gap-4">
-            @foreach ($partners as $p)
-                <li class="flex h-20 min-w-44 items-center justify-center rounded-[8px] border border-line bg-white px-6">
-                    <img src="{{ $p->logoUrl() }}" alt="{{ $p->name }}" loading="lazy" decoding="async" class="max-h-12 max-w-40 object-contain">
+            @php
+                // Gold logos sit on deep green; Fidelity Life (red on white) stays on white, in the middle.
+                $order = ['marufu-attorneys' => 0, 'fidelity-life' => 1, 'tn-cybertech-bank' => 2];
+                $dark = ['marufu-attorneys' => 'images/partners/marufu-attorneys-white.webp', 'tn-cybertech-bank' => null];
+            @endphp
+            @foreach ($partners->sortBy(fn ($p) => $order[$p->slug] ?? 9) as $p)
+                @php $isDark = array_key_exists($p->slug, $dark); @endphp
+                <li @class(['flex h-24 w-72 max-w-full items-center justify-center rounded-[12px] px-8', 'bg-forest-900 ring-1 ring-gold-500/30' => $isDark, 'border border-line bg-white' => ! $isDark])>
+                    <img src="{{ $isDark && $dark[$p->slug] ? asset($dark[$p->slug]) : $p->logoUrl() }}" alt="{{ $p->name }}" loading="lazy" decoding="async" class="max-h-14 max-w-48 object-contain">
                 </li>
             @endforeach
         </ul>
