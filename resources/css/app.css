@@ -30,6 +30,8 @@
 
     --color-cream: #faf7f0;
     --color-sand: #f3f1ea;
+    --color-mint: #e3ede5;
+    --color-wheat: #ece4d0;
     --color-line: #e6e1d6;
     --color-ink: #14201a;
     --color-muted: #4c5a52;
@@ -49,7 +51,7 @@
 
 @layer base {
     html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-    body { @apply bg-cream text-ink font-sans antialiased; font-feature-settings: 'ss01'; }
+    body { @apply bg-wheat text-ink font-sans antialiased; font-feature-settings: 'ss01'; }
     h1, h2, h3, .font-display { @apply font-serif tracking-tight; }
     :focus-visible { outline: 2px solid var(--color-gold-500); outline-offset: 2px; }
     [x-cloak] { display: none !important; }
@@ -90,6 +92,10 @@
 }
 
 @utility sponsored-label { @apply text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted; }
+
+/* Slow zoom on the visible hero scene (compositor-only) */
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.06); } }
+.hero-slide.opacity-100 .hero-kenburns { animation: kenburns 9s ease-out both; }
 
 /* Scroll-driven reveal, compositor-only, ignored by browsers without support */
 @supports (animation-timeline: view()) {

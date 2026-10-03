@@ -2,11 +2,11 @@
     $nav = [['Services', route('services'), 'services*'], ['Community', route('community'), 'community*'], ['Notices', route('notices'), 'notices*'], ['About us', route('about'), 'about*']];
 @endphp
 <header class="sticky top-0 z-40 border-b border-white/10 bg-forest-900/95 text-cream backdrop-blur supports-[backdrop-filter]:bg-forest-900/85" x-data="nav">
-    <div class="wrap flex h-16 items-center justify-between gap-4 lg:h-[72px]">
+    <div class="wrap flex h-[72px] items-center justify-between gap-4 lg:h-[88px]">
         <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="Southview Park Residents Association home">
-            <img src="/images/logo-96.webp" width="44" height="44" alt="" class="size-10 rounded-[8px] bg-white object-cover lg:size-11">
+            <img src="/images/logo-128.webp" width="64" height="64" alt="" class="size-14 rounded-[10px] bg-white object-cover shadow-sm ring-1 ring-gold-500/40 lg:size-16">
             <span class="flex flex-col leading-tight">
-                <span class="font-serif text-[15px] font-bold whitespace-nowrap sm:text-[17px]"><span class="hidden sm:inline">Fidelity </span>Southview Park</span>
+                <span class="font-serif text-base font-bold whitespace-nowrap sm:text-lg lg:text-xl"><span class="hidden sm:inline">Fidelity </span>Southview Park</span>
                 <span class="text-[9px] font-extrabold uppercase tracking-[0.14em] text-gold-500 whitespace-nowrap sm:text-[10px] sm:tracking-[0.16em]">Residents Association</span>
             </span>
         </a>

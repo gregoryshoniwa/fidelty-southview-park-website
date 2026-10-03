@@ -8,18 +8,22 @@
 {{-- HERO --}}
 @php $heroVideo = \App\Models\Setting::get('hero_video_path'); @endphp
 <section class="relative isolate overflow-hidden bg-forest-900 text-cream" aria-labelledby="hero-title">
-    <picture>
-        <source type="image/webp" srcset="/images/hero-estate-768.webp 768w, /images/hero-estate-1280.webp 1280w, /images/hero-estate-1920.webp 1920w" sizes="100vw">
-        <img src="/images/hero-estate-1280.jpg" alt="" width="1280" height="720" fetchpriority="high" decoding="async" class="absolute inset-0 -z-20 size-full object-cover">
-    </picture>
+    @php $slides = [['hero-estate', 'jpg'], ['hero-midday', 'webp'], ['hero-evening', 'webp']]; @endphp
+    <div class="absolute inset-0 -z-20" x-data="heroSlides" data-slides="3" aria-hidden="true">
+        @foreach ($slides as $i => [$img, $fallback])
+            <picture class="hero-slide absolute inset-0 transition-opacity duration-[1400ms] ease-in-out" x-bind:class="slide{{ $i }}">
+                <source type="image/webp" srcset="/images/{{ $img }}-768.webp 768w, /images/{{ $img }}-1280.webp 1280w, /images/{{ $img }}-1920.webp 1920w" sizes="100vw">
+                <img src="/images/{{ $img }}-1280.{{ $fallback }}" alt="" width="1280" height="720" decoding="async" @if($i === 0) fetchpriority="high" @else loading="lazy" @endif class="hero-kenburns size-full object-cover">
+            </picture>
+        @endforeach
+    </div>
     @if ($heroVideo)
         <video class="absolute inset-0 -z-20 hidden size-full object-cover" data-hero-video data-src="{{ asset($heroVideo) }}" muted loop playsinline preload="none" poster="/images/hero-estate-1280.webp" aria-hidden="true"></video>
     @endif
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-forest-950/95 via-forest-900/80 to-forest-900/30" aria-hidden="true"></div>
 
-    <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-[1.15fr_.85fr] lg:py-28">
+    <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-[1.15fr_.85fr] lg:py-28" x-on:mouseenter="heroPause" x-on:mouseleave="heroResume">
         <div class="flex flex-col gap-6">
-            <span class="chip animate-rise self-start border border-gold-500/40 bg-gold-500/15 text-gold-400">Amalinda, Harare</span>
             <h1 id="hero-title" class="animate-rise font-serif text-[40px] font-bold leading-[1.04] [animation-delay:.08s] sm:text-5xl lg:text-[60px]">Services first.<br>Trust earned,<br><span class="text-gold-500">not asked for.</span></h1>
             <p class="animate-rise max-w-xl text-lg leading-relaxed text-cream/85 [animation-delay:.16s]">Recover your Agreement of Sale, track your title deed, and talk to your committee privately. No levies. Every fee printed before you pay.</p>
             <div class="animate-rise flex flex-wrap items-center gap-3 [animation-delay:.24s]">
@@ -30,6 +34,11 @@
                 <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Free to join</li>
                 <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Backed by Fidelity Life, Marufu Attorneys and TN CyberTech Bank</li>
             </ul>
+            <div class="animate-rise mt-2 flex items-center gap-2 [animation-delay:.36s]" x-data="heroDots" role="group" aria-label="Hero images">
+                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot0" x-on:click="go0" aria-label="Show sunrise image"></button>
+                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot1" x-on:click="go1" aria-label="Show midday image"></button>
+                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot2" x-on:click="go2" aria-label="Show evening image"></button>
+            </div>
         </div>
         <div class="hidden flex-col items-end gap-3 lg:flex" aria-hidden="true">
             @foreach ([
@@ -44,23 +53,17 @@
             @endforeach
         </div>
     </div>
-    <div class="wrap pb-6">
-        <p class="inline-flex items-center gap-2 rounded-[6px] border border-white/15 bg-forest-950/60 px-3 py-1.5 text-xs text-cream/80">
-            <span class="sponsored-label !text-gold-500">Presented by</span>
-            <span class="font-bold">{{ $hero?->advertiser ?? 'Fidelity Southview Park Residents Association' }}</span>
-        </p>
-    </div>
 </section>
 
 {{-- COUNTERS --}}
-<section class="border-b border-line" aria-label="What we have done">
-    <div class="wrap py-9">
-        <p class="eyebrow mb-4 flex items-center gap-2 text-forest-700"><span class="size-2 rounded-full bg-forest-500 ring-4 ring-forest-500/20"></span>Counting since launch day</p>
+<section class="bg-forest-950 text-cream" aria-label="What we have done">
+    <div class="wrap py-10">
+        <p class="eyebrow mb-4 flex items-center gap-2 text-gold-400"><span class="size-2 rounded-full bg-gold-500 ring-4 ring-gold-500/25"></span>Counting since launch day</p>
         <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
             @foreach ([[$stats['verified'], 'Residents verified'], [$stats['agreements'], 'Agreement of Sale requests'], [$stats['deeds'], 'Title deed files opened'], [$stats['answered_pct'] !== null ? $stats['answered_pct'].'%' : 'New', 'Questions answered within 48 hours']] as [$n, $label])
-                <div class="card flex flex-col gap-1 px-5 py-4">
-                    <dt class="order-2 text-sm font-semibold text-muted">{{ $label }}</dt>
-                    <dd class="order-1 font-serif text-4xl font-bold text-forest-700" data-count="{{ is_numeric($n) ? $n : '' }}">{{ $n }}</dd>
+                <div class="flex flex-col gap-1 rounded-[12px] border border-white/10 bg-white/[0.06] px-5 py-4">
+                    <dt class="order-2 text-sm font-semibold text-cream/75">{{ $label }}</dt>
+                    <dd class="order-1 font-serif text-4xl font-bold text-gold-400" data-count="{{ is_numeric($n) ? $n : '' }}">{{ $n }}</dd>
                 </div>
             @endforeach
         </dl>
@@ -68,6 +71,7 @@
 </section>
 
 {{-- SERVICES --}}
+<div class="bg-mint">
 <section id="services" class="wrap py-20 lg:py-24" aria-labelledby="services-title">
     <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
         <x-section-head eyebrow="What you can do" title="Real services, backed by named partners" lead="Every service has a partner standing behind it in writing, and its fee printed before you pay." id="services-title" />
@@ -82,23 +86,24 @@
 
 {{-- BILLBOARD --}}
 <div class="wrap pb-20"><x-ad placement="billboard" :ad="$billboard" class="mx-auto max-w-[970px]" /></div>
+</div>
 
 {{-- HOW IT WORKS --}}
-<section class="border-y border-line bg-white" aria-labelledby="how-title">
+<section class="bg-forest-800 text-cream" aria-labelledby="how-title">
     <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-24">
         <div class="flex flex-col gap-5">
-            <x-section-head eyebrow="How it works" title="Three steps. No meetings required." lead="We do not ask you to join and then wait. You use a service, you see the result, and you decide whether we have earned your membership." id="how-title" />
+            <x-section-head eyebrow="How it works" title="Three steps. No meetings required." lead="We do not ask you to join and then wait. You use a service, you see the result, and you decide whether we have earned your membership." dark id="how-title" />
             <a href="/app/verify" class="btn btn-gold self-start">Start with Verify Me</a>
         </div>
-        <ol class="divide-y divide-line">
+        <ol class="divide-y divide-white/10">
             @foreach ([
                 ['Verify your stand', 'Your ID number and stand number are matched against Fidelity Life records. A one-time code goes to the phone they have on file.'],
                 ['Use a service', 'Recover your agreement, open your deed file, message the partner on your case. Any fee is printed before the button.'],
                 ['Have your say', 'Verified residents vote in polls and write to the committee privately. After 12 months, you vote on the committee itself.'],
             ] as $i => [$t, $d])
                 <li class="reveal flex gap-5 py-6">
-                    <span class="flex size-11 shrink-0 items-center justify-center rounded-[8px] font-serif text-xl font-bold {{ $i === 2 ? 'bg-gold-500 text-forest-900' : 'bg-forest-700 text-gold-500' }}">{{ $i + 1 }}</span>
-                    <span class="flex flex-col gap-1"><span class="text-lg font-extrabold text-forest-900">{{ $t }}</span><span class="text-[15px] leading-relaxed text-muted">{{ $d }}</span></span>
+                    <span class="flex size-11 shrink-0 items-center justify-center rounded-[8px] font-serif text-xl font-bold {{ $i === 2 ? 'bg-gold-500 text-forest-900' : 'bg-white/10 text-gold-400' }}">{{ $i + 1 }}</span>
+                    <span class="flex flex-col gap-1"><span class="text-lg font-extrabold text-cream">{{ $t }}</span><span class="text-[15px] leading-relaxed text-cream/75">{{ $d }}</span></span>
                 </li>
             @endforeach
         </ol>
@@ -131,7 +136,7 @@
 </section>
 
 {{-- NOTICES --}}
-<section id="notices" class="border-y border-line bg-white" aria-labelledby="notices-title">
+<section id="notices" class="bg-mint" aria-labelledby="notices-title">
     <div class="wrap py-20 lg:py-24">
         <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
             <x-section-head eyebrow="Notice board" title="One official channel. Calm, dated, signed." lead="No group chats. Official notices only, each dated and signed by a committee role. Something to raise? Write to the committee privately." id="notices-title" />
@@ -178,7 +183,7 @@
 </section>
 
 {{-- PARTNERS --}}
-<section class="border-b border-line" aria-labelledby="partners-title">
+<section class="border-t border-wheat bg-wheat" aria-labelledby="partners-title">
     <div class="wrap flex flex-col items-center gap-6 py-12">
         <h2 id="partners-title" class="eyebrow font-sans text-muted">Partners who stand behind each service</h2>
         <ul class="flex flex-wrap items-center justify-center gap-4">

@@ -5,6 +5,8 @@ Alpine.data('page', () => ({
     subscribeOpen: false,
     openSubscribe() { this.subscribeOpen = true; document.body.style.overflow = 'hidden'; },
     closeSubscribe() { this.subscribeOpen = false; document.body.style.overflow = ''; },
+    heroPause() { window.dispatchEvent(new Event('hero-pause')); },
+    heroResume() { window.dispatchEvent(new Event('hero-resume')); },
 }));
 
 Alpine.data('nav', () => ({
@@ -31,6 +33,39 @@ Alpine.data('toasts', () => ({
         const id = Number(e.currentTarget.dataset.id);
         this.items = this.items.filter((i) => i.id !== id);
     },
+}));
+
+// Hero slideshow: crossfades three scenes every 7 s; stays still when motion is reduced,
+// pauses on hover and while the tab is hidden.
+Alpine.store('hero', { i: 0 });
+Alpine.data('heroSlides', () => ({
+    timer: null,
+    cls(n) { return Alpine.store('hero').i === n ? 'opacity-100' : 'opacity-0'; },
+    get slide0() { return this.cls(0); },
+    get slide1() { return this.cls(1); },
+    get slide2() { return this.cls(2); },
+    init() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const n = Number(this.$el.dataset.slides) || 3;
+        const start = () => {
+            clearInterval(this.timer);
+            this.timer = setInterval(() => { if (document.visibilityState === 'visible') Alpine.store('hero').i = (Alpine.store('hero').i + 1) % n; }, 7000);
+        };
+        start();
+        window.addEventListener('hero-pause', () => clearInterval(this.timer));
+        window.addEventListener('hero-resume', start);
+        window.addEventListener('hero-restart', start);
+    },
+}));
+Alpine.data('heroDots', () => ({
+    dot(n) { return Alpine.store('hero').i === n ? 'w-8 bg-gold-500' : 'w-4 bg-cream/40 hover:bg-cream/70'; },
+    get dot0() { return this.dot(0); },
+    get dot1() { return this.dot(1); },
+    get dot2() { return this.dot(2); },
+    pick(n) { Alpine.store('hero').i = n; window.dispatchEvent(new Event('hero-restart')); },
+    go0() { this.pick(0); },
+    go1() { this.pick(1); },
+    go2() { this.pick(2); },
 }));
 
 Alpine.start();
