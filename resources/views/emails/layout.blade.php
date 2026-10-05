@@ -16,7 +16,7 @@
   <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
     <tr><td style="background:#073320;border-radius:14px 14px 0 0;padding:22px 32px;" class="px">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="padding-right:14px;"><img src="{{ asset('images/email-logo.png') }}" width="64" height="64" alt="Fidelity Southview Park Residents Association" style="display:block;border:0;border-radius:10px;background:#ffffff;"></td>
+        <td style="padding-right:14px;"><img src="{{ isset($message) ? $message->embed(public_path('images/email-logo.png')) : asset('images/email-logo.png') }}" width="64" height="64" alt="Fidelity Southview Park Residents Association" style="display:block;border:0;border-radius:10px;background:#ffffff;"></td>
         <td style="font-family:Georgia,'Times New Roman',serif;color:#faf7f0;font-size:19px;font-weight:bold;line-height:1.2;">Fidelity Southview Park<br><span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;color:#c9a227;font-weight:bold;">RESIDENTS ASSOCIATION</span></td>
       </tr></table>
     </td></tr>
