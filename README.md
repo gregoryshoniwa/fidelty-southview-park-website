@@ -16,14 +16,24 @@ php artisan migrate:fresh --seed     # includes demo accounts in local only
 npm run dev & php artisan serve
 ```
 
-| Area | URL | Demo sign-in (local only) |
-| --- | --- | --- |
-| Public site | http://127.0.0.1:8000 | none |
-| Resident app | /app | any Zimbabwe mobile number; the SMS code is shown on screen locally |
-| Partner portal | /partner | 0770000010 / Partner!2026 (Marufu Attorneys), 0770000011 (TN CyberTech Bank), 0770000012 (Fidelity Life), code shown on screen |
-| Committee admin | /admin | admin@example.test / ChangeMe!2026 (super admin), treasurer@example.test (finance) |
+## Local demo accounts
 
-Demo stands for verification: 1001 to 1200 with any well-formed ID such as 63-123456-A-12.
+These exist only on a local copy seeded with `php artisan migrate:fresh --seed`. They are never created in production.
+
+| Where | Sign in with | Password |
+| --- | --- | --- |
+| Committee admin, `/admin` (full access) | `admin@example.test` | `ChangeMe!2026` |
+| Committee admin, `/admin` (finance only) | `treasurer@example.test` | `ChangeMe!2026` |
+| Partner portal, `/partner` (Marufu Attorneys) | phone `0770000010` | `Partner!2026` |
+| Partner portal, `/partner` (TN CyberTech Bank) | phone `0770000011` | `Partner!2026` |
+| Partner portal, `/partner` (Fidelity Life) | phone `0770000012` | `Partner!2026` |
+| Resident app, `/app` | any Zimbabwean mobile, e.g. `0771234567` | none (SMS code) |
+
+- **SMS codes:** for partners and residents, the code is shown on screen locally because no real SMS is sent.
+- **Demo resident:** `0771234567` is already verified on stand 1001.
+- **Admin two-factor:** the first admin sign-in shows a QR code. Scan it with Google Authenticator or Microsoft Authenticator, enter the 6-digit code, and keep the recovery codes.
+- **Verifying a test stand:** use any stand from 1001 to 1200 with an ID like `63-123456-A-12`.
+- **Production:** create the real committee admin with `php artisan fspra:admin` (see [DEPLOY.md](DEPLOY.md)).
 
 ## Tests
 
