@@ -30,8 +30,22 @@ export async function googleToken() {
 let verifier = null;
 export async function sendPhoneCode(e164, buttonId) {
     const { a, auth } = await fb();
-    verifier ??= new auth.RecaptchaVerifier(a, buttonId, { size: 'invisible' });
-    return auth.signInWithPhoneNumber(a, e164, verifier); // returns confirmation; call .confirm(code)
+    // A verifier is single-use after a failure and is tied to one button element, so rebuild it when needed.
+    if (verifier && verifier._fspraEl !== document.getElementById(buttonId)) resetVerifier();
+    if (!verifier) {
+        verifier = new auth.RecaptchaVerifier(a, buttonId, { size: 'invisible' });
+        verifier._fspraEl = document.getElementById(buttonId);
+    }
+    try {
+        return await auth.signInWithPhoneNumber(a, e164, verifier); // returns confirmation; call .confirm(code)
+    } catch (e) {
+        resetVerifier();
+        throw e;
+    }
+}
+function resetVerifier() {
+    try { verifier?.clear(); } catch {}
+    verifier = null;
 }
 export async function confirmPhoneCode(confirmation, code) {
     const res = await confirmation.confirm(code);
