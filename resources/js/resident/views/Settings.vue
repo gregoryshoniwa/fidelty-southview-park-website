@@ -9,7 +9,7 @@ import ConfirmDialog from '@/shared/ConfirmDialog.vue';
 import PhoneLink from '../components/PhoneLink.vue';
 import { useAuth } from '../store.js';
 const auth = useAuth(); const router = useRouter();
-const form = ref({ name: auth.user.name, email: auth.user.email || '', locale: auth.user.locale, notification_prefs: { sms: true, push: true, ...(auth.user.notification_prefs || {}) } });
+const form = ref({ name: auth.user.name, email: auth.user.email || '', locale: auth.user.locale, notification_prefs: { sms: true, push: true, email: true, ...(auth.user.notification_prefs || {}) } });
 const busy = ref(false); const errors = ref({}); const del = ref(false); const reason = ref('');
 async function save() {
     busy.value = true; errors.value = {};
@@ -29,6 +29,7 @@ async function logout() { await auth.logout(); router.replace('/login'); }
             <div><label for="slocale" class="label">Language</label><select id="slocale" v-model="form.locale" class="input"><option value="en">English</option><option value="sn">Shona</option><option value="nd">Ndebele</option></select></div>
             <fieldset class="flex flex-col gap-2"><legend class="label">Notifications</legend>
                 <label class="flex items-center gap-3 text-sm"><input v-model="form.notification_prefs.sms" type="checkbox" class="size-4 accent-forest-700">SMS for updates on my requests and messages</label>
+                <label class="flex items-center gap-3 text-sm"><input v-model="form.notification_prefs.email" type="checkbox" class="size-4 accent-forest-700" :disabled="!auth.user.email">Email updates{{ auth.user.email ? '' : ' (add an email above first)' }}</label>
                 <label class="flex items-center gap-3 text-sm"><input v-model="form.notification_prefs.push" type="checkbox" class="size-4 accent-forest-700">In-app notifications</label>
             </fieldset>
             <button class="btn btn-gold self-start" :disabled="busy">Save</button>

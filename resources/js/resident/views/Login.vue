@@ -6,28 +6,25 @@ import { Phone, Mail, ArrowRight, ShieldCheck, MailCheck, Loader2 } from 'lucide
 import { api } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
 import { useAuth } from '../store.js';
-import { authConfig, googleToken, sendEmailLink, completeEmailLink, sendPhoneCode, confirmPhoneCode, toE164, friendlyError } from '../firebase.js';
+import { authConfig, googleToken, sendPhoneCode, confirmPhoneCode, toE164, friendlyError } from '../firebase.js';
 
 const router = useRouter(); const route = useRoute(); const auth = useAuth();
 const cfg = ref({ providers: [], phone_provider: 'local' });
 const mode = ref('choose'); // choose | phone | code | email | email-sent | details | email-confirm
 const phone = ref(''); const code = ref(''); const email = ref(''); const name = ref(''); const accept = ref(false);
 const masked = ref(''); const devCode = ref(null); const busy = ref(''); const errors = ref({});
-let confirmation = null; let pendingToken = null;
+let confirmation = null; let pendingToken = null; let emailToken = null;
 
 const hasGoogle = computed(() => cfg.value.providers.includes('google'));
-const hasEmail = computed(() => cfg.value.providers.includes('email'));
+const hasEmail = computed(() => true);
 
 onMounted(async () => {
     cfg.value = await authConfig();
-    if (!cfg.value.providers.length && route.name !== 'login-email') mode.value = 'phone';
-    if (route.name === 'login-email') {
+    if (route.name === 'login-email' && typeof route.query.token === 'string') {
+        emailToken = route.query.token;
+        router.replace({ name: 'login-email' }); // keep the one-time token out of history
         busy.value = 'email';
-        try {
-            const r = await completeEmailLink();
-            if (r?.needEmail) { mode.value = 'email-confirm'; return; }
-            if (r) await exchange(r.token, r.name);
-        } catch (e) { toast.error(friendlyError(e)); mode.value = 'email'; } finally { busy.value = ''; }
+        try { await emailVerify(); } finally { busy.value = ''; }
     }
 });
 
@@ -55,12 +52,19 @@ async function google() {
 
 async function emailStart() {
     busy.value = 'email'; errors.value = {};
-    try { await sendEmailLink(email.value.trim()); mode.value = 'email-sent'; } catch (e) { errors.value = { email: [friendlyError(e)] }; } finally { busy.value = ''; }
+    try { await api('/auth/email', { method: 'POST', body: { email: email.value.trim() } }); mode.value = 'email-sent'; }
+    catch (e) { errors.value = e.errors || {}; } finally { busy.value = ''; }
 }
-async function emailConfirm() {
-    busy.value = 'email';
-    try { const r = await completeEmailLink(email.value.trim()); if (r?.token) await exchange(r.token, r.name); } catch (e) { toast.error(friendlyError(e)); } finally { busy.value = ''; }
+async function emailVerify() {
+    try {
+        const r = await api('/auth/email/verify', { method: 'POST', body: { token: emailToken, name: name.value || undefined, accept_terms: accept.value } });
+        done(r.user);
+    } catch (e) {
+        if (e.data?.needs_details) { mode.value = 'details'; return; }
+        toast.error(e.first?.('token') || e.message); mode.value = 'email';
+    }
 }
+function emailConfirm() { emailStart(); }
 
 async function phoneStart() {
     busy.value = 'phone'; errors.value = {};
@@ -93,7 +97,8 @@ async function codeSubmit() {
 async function detailsSubmit() {
     busy.value = 'details';
     try {
-        if (pendingToken) await exchange(pendingToken);
+        if (emailToken) await emailVerify();
+        else if (pendingToken) await exchange(pendingToken);
         else await codeSubmit();
     } finally { busy.value = ''; }
 }
@@ -129,7 +134,7 @@ async function detailsSubmit() {
                     <p class="-mt-3 text-muted">We send a 6-digit code by SMS.</p>
                     <Field id="phone" v-model="phone" label="Mobile number" type="tel" inputmode="tel" autocomplete="tel" placeholder="077 123 4567" required :error="errors.phone?.[0]" />
                     <button id="phone-send" class="btn btn-gold w-full" :disabled="!!busy || phone.length < 9"><Loader2 v-if="busy" class="size-4 animate-spin" />Send me a code</button>
-                    <button v-if="cfg.providers.length" type="button" class="btn btn-quiet" @click="mode = 'choose'">Other ways to sign in</button>
+                    <button type="button" class="btn btn-quiet" @click="mode = 'choose'">Other ways to sign in</button>
                 </form>
 
                 <form v-else-if="mode === 'code'" class="flex flex-col gap-5" @submit.prevent="codeSubmit">
@@ -152,7 +157,7 @@ async function detailsSubmit() {
                 <div v-else-if="mode === 'email-sent'" class="flex flex-col items-center gap-4 text-center">
                     <span class="flex size-16 items-center justify-center rounded-full bg-forest-100 text-forest-700"><MailCheck class="size-8" /></span>
                     <h1 class="font-serif text-3xl font-bold text-forest-900">Check your email</h1>
-                    <p class="text-muted">We sent a sign-in link to <strong class="text-forest-900">{{ email }}</strong>. Open it on this phone to continue. Check your spam folder if it does not arrive in a minute.</p>
+                    <p class="text-muted">If <strong class="text-forest-900">{{ email }}</strong> can receive mail, a sign-in link from info@fidelity-southview.co.zw is on its way. It works once and expires in 15 minutes. Check your spam folder if it does not arrive in a minute.</p>
                     <button type="button" class="btn btn-quiet" @click="mode = 'email'">Use a different email</button>
                 </div>
 

@@ -20,7 +20,7 @@ return [
         'api_key' => env('FIREBASE_API_KEY'),
         'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
         'app_id' => env('FIREBASE_APP_ID'),
-        'providers' => array_filter(explode(',', (string) env('FIREBASE_PROVIDERS', 'google,email'))),
+        'providers' => array_filter(explode(',', (string) env('FIREBASE_PROVIDERS', 'google'))),
     ],
     // 'firebase' sends sign-in codes through Firebase; 'local' uses the SMS gateway in config('fspra.sms').
     'phone_provider' => env('AUTH_PHONE_PROVIDER', 'local'),

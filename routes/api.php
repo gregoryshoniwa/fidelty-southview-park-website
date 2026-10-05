@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/otp', [Api\AuthController::class, 'requestOtp'])->middleware('throttle:otp');
 Route::post('/auth/verify', [Api\AuthController::class, 'verifyOtp'])->middleware('throttle:20,1');
 Route::get('/auth/config', [Api\AuthController::class, 'config']);
+Route::post('/auth/email', [Api\EmailLoginController::class, 'request'])->middleware('throttle:email-link');
+Route::post('/auth/email/verify', [Api\EmailLoginController::class, 'verify'])->middleware('throttle:20,1');
 Route::post('/auth/firebase', [Api\AuthController::class, 'firebase'])->middleware('throttle:20,1');
 Route::get('/assistant/config', [Api\AssistantController::class, 'config']);
 Route::post('/assistant/chat', [Api\AssistantController::class, 'chat'])->middleware('throttle:assistant');

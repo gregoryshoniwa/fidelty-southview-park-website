@@ -75,7 +75,8 @@ class AuthController extends Controller
 
         return response()->json([
             'firebase' => $enabled ? ['apiKey' => $f['api_key'], 'authDomain' => $f['auth_domain'] ?: $f['project_id'].'.firebaseapp.com', 'projectId' => $f['project_id'], 'appId' => $f['app_id']] : null,
-            'providers' => $enabled ? array_values($f['providers']) : [],
+            'providers' => array_values(array_unique(array_merge($enabled ? $f['providers'] : [], ['email']))),
+            'email_via' => 'association',
             'phone_provider' => $enabled && config('fspra.phone_provider') === 'firebase' ? 'firebase' : 'local',
         ]);
     }

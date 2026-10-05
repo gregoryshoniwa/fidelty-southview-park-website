@@ -82,12 +82,11 @@ This runs the queue (receipts, notifications), quiet-hour SMS, nightly ledger ch
 
 Run `php artisan optimize` after every `.env` change.
 
-## 9. Firebase sign-in (Google, email, optional phone)
+## 9. Sign-in: Google and SMS via Firebase, email via your own mailbox
 
 1. Go to https://console.firebase.google.com, **Add project** "Southview Park" (Analytics off).
 2. **Build > Authentication > Get started**, then **Sign-in method**:
    - Enable **Google** (choose a support email).
-   - Enable **Email/Password** and switch on **Email link (passwordless sign-in)**.
    - Optional: enable **Phone**. This requires upgrading to the **Blaze** plan with a card. Zimbabwe SMS cost US$0.09 each; the first 10 per day are free. Set a budget alert in Google Cloud Billing.
 3. **Authentication > Settings > Authorized domains**: add `fidelity-southview.co.zw` (and `www.`).
 4. **Project settings > General > Your apps > Web app (</>)**: register "Southview web". Copy `apiKey`, `authDomain`, `projectId`, `appId` into `.env` as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`.
@@ -97,7 +96,13 @@ Run `php artisan optimize` after every `.env` change.
 
 These web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
 
-### Firebase email domain (DNS at Cloudflare)
+### Branded emails
+
+Sign-in links and resident notifications are sent from `info@fidelity-southview.co.zw` through the cPanel mail server, using the branded template in `resources/views/emails`. Put that mailbox's password in `MAIL_PASSWORD`. The domain already publishes SPF, DKIM and DMARC for this server, so no DNS changes are needed.
+
+### Firebase email domain (not needed)
+
+Only needed if you ever send email through Firebase again. DNS is hosted at Cloudflare, managed by WebDev:
 
 The domain's DNS is hosted at **Cloudflare** (nameservers cory/perla.ns.cloudflare.com), so add these in Cloudflare > fidelity-southview.co.zw > **DNS > Records**, not in cPanel's Zone Editor:
 

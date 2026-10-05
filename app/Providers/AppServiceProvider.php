@@ -51,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perDay(10)->by('otp-phone-day:'.(\App\Services\Phone::normalise((string) $r->input('phone')) ?? 'invalid')),
             Limit::perHour(20)->by('otp-ip:'.$r->ip()),
         ]);
+        RateLimiter::for('email-link', fn (Request $r) => [Limit::perHour(5)->by('email:'.strtolower((string) $r->input('email'))), Limit::perDay(30)->by('email-ip:'.$r->ip())]);
         RateLimiter::for('api', fn (Request $r) => Limit::perMinute(90)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('payments', fn (Request $r) => Limit::perMinute(10)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('assistant', fn (Request $r) => [Limit::perMinute(12)->by($r->user()?->id ?: $r->ip()), Limit::perDay(200)->by($r->ip())]);

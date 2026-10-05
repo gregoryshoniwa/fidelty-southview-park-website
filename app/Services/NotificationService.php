@@ -13,6 +13,13 @@ class NotificationService
     {
         $n = InAppNotification::create(['user_id' => $user->id, 'title' => $title, 'body' => $body, 'link' => $link, 'kind' => $kind]);
         $prefs = $user->notification_prefs ?? [];
+        if ($user->email && $user->email_verified_at && ($prefs['email'] ?? true)) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\ResidentNotificationMail($user->name, $title, $body, $link ? url($link) : null));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
         if ($sms && ($prefs['sms'] ?? true) && $user->phone) {
             $text = $title.($body ? ': '.str($body)->limit(110) : '').' '.($link ? url($link) : '');
             $this->sms->send($user->phone, trim($text), 'notification');

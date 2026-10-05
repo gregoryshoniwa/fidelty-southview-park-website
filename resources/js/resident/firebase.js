@@ -21,28 +21,9 @@ async function fb() {
     return authPromise;
 }
 
-const EMAIL_KEY = 'southview.emailForSignIn';
-
 export async function googleToken() {
     const { a, auth } = await fb();
     const res = await auth.signInWithPopup(a, new auth.GoogleAuthProvider());
-    return { token: await res.user.getIdToken(), name: res.user.displayName };
-}
-
-export async function sendEmailLink(email) {
-    const { a, auth } = await fb();
-    await auth.sendSignInLinkToEmail(a, email, { url: location.origin + '/app/login/email', handleCodeInApp: true });
-    try { localStorage.setItem(EMAIL_KEY, email); } catch {}
-}
-
-export async function completeEmailLink(emailIfAsked) {
-    const { a, auth } = await fb();
-    if (!auth.isSignInWithEmailLink(a, location.href)) return null;
-    let email = emailIfAsked;
-    if (!email) { try { email = localStorage.getItem(EMAIL_KEY); } catch {} }
-    if (!email) return { needEmail: true };
-    const res = await auth.signInWithEmailLink(a, email, location.href);
-    try { localStorage.removeItem(EMAIL_KEY); } catch {}
     return { token: await res.user.getIdToken(), name: res.user.displayName };
 }
 

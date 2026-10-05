@@ -21,6 +21,7 @@ class AccountController extends Controller
             'notification_prefs' => ['sometimes', 'array'],
             'notification_prefs.sms' => ['boolean'],
             'notification_prefs.push' => ['boolean'],
+            'notification_prefs.email' => ['boolean'],
             'marketing' => ['sometimes', 'boolean'],
         ]);
         $user = $request->user();
