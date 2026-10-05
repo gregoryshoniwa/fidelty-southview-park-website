@@ -25,5 +25,6 @@ export default defineConfig({
             },
         },
     },
-    server: { watch: { ignored: ['**/storage/framework/views/**'] } },
+    // Pin to IPv4 so the dev URL is valid in the Content-Security-Policy (IPv6 literals like [::1] are rejected).
+    server: { host: '127.0.0.1', port: 5173, strictPort: true, hmr: { host: '127.0.0.1' }, watch: { ignored: ['**/storage/framework/views/**'] } },
 });

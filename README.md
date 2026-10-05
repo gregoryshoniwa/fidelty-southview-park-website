@@ -8,13 +8,29 @@ Laravel 13 on PHP 8.3 · MySQL 8 · Vue 3 (resident app and partner portal) · B
 
 ## Run locally
 
+First time only (installs everything, creates the database tables and demo data, builds assets):
+
 ```bash
-composer install && npm install
-cp .env.example .env   # set DB_* (local MySQL), then:
-php artisan key:generate
-php artisan migrate:fresh --seed     # includes demo accounts in local only
-npm run dev & php artisan serve
+composer setup        # set DB_* in .env first (local MySQL database `fspra`)
 ```
+
+Every day after that, one command runs the whole application:
+
+```bash
+composer dev
+```
+
+It starts five processes together, with live reload:
+
+| Process | What it does |
+| --- | --- |
+| `server` | The website at http://127.0.0.1:8000 |
+| `queue` | Sends emails and receipts in the background |
+| `scheduler` | Notice SMS, quiet-hour SMS, ledger check, assistant knowledge rebuild |
+| `logs` | Live application log (Laravel Pail) |
+| `vite` | Front-end assets with instant reload at http://127.0.0.1:5173 |
+
+Press `Ctrl+C` to stop everything. To start from a clean demo database: `php artisan migrate:fresh --seed`.
 
 ## Local demo accounts
 

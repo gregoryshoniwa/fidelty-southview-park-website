@@ -52,7 +52,8 @@ Artisan::command('fspra:notice-sms', function (SmsService $sms) {
 })->purpose('SMS newly published notices to subscribers');
 
 Schedule::command('fspra:notice-sms')->everyFiveMinutes()->withoutOverlapping();
-Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')->everyMinute()->withoutOverlapping();
+// On cPanel there is no long-running worker, so cron drains the queue each minute. Locally `composer dev` runs queue:listen instead.
+Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')->everyMinute()->withoutOverlapping()->environments(['production', 'staging']);
 Schedule::command('fspra:sms-flush')->dailyAt('07:05');
 Schedule::command('fspra:verify-ledger')->dailyAt('02:30');
 Schedule::call(fn () => app(AssistantService::class)->rebuildKnowledge())->dailyAt('03:00');

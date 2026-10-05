@@ -34,6 +34,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // `composer dev` runs: web server, queue worker, logs, Vite, and the scheduler below.
+        if ($this->app->runningInConsole() && class_exists(\Illuminate\Foundation\DevCommands::class)) {
+            \Illuminate\Foundation\DevCommands::artisan('schedule:work', 'scheduler');
+        }
+
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
 
         if ($this->app->isProduction()) {
