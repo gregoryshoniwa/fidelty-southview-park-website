@@ -30,6 +30,10 @@ Route::controller(SiteController::class)->group(function () {
     Route::get('/manifest.webmanifest', 'manifest');
 });
 
+// Firebase sign-in helper pages served from our own domain (see FirebaseAuthProxyController).
+Route::match(['GET', 'POST'], '/__/{path}', \App\Http\Controllers\Web\FirebaseAuthProxyController::class)
+    ->where('path', '(auth|firebase)/.*')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])->middleware('throttle:120,1');
+
 Route::get('/go/ad/{sponsorship}', [AdController::class, 'click'])->name('ad.click');
 Route::post('/api/ads/impressions', [AdController::class, 'impressions'])->middleware('throttle:60,1');
 

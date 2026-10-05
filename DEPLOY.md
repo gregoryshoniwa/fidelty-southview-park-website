@@ -94,6 +94,25 @@ Run `php artisan optimize` after every `.env` change.
 6. To send phone codes through Firebase set `AUTH_PHONE_PROVIDER=firebase`; leave `local` to use your own SMS gateway.
 7. `php artisan optimize`.
 
+### Show your own domain on the Google sign-in screen
+
+By default Google says "Sign in to fidelity-southview-park.firebaseapp.com". The app serves Firebase's sign-in helper pages itself at `https://fidelity-southview.co.zw/__/auth/...`, so production can use our domain instead:
+
+1. In the production `.env` set `FIREBASE_AUTH_DOMAIN=fidelity-southview.co.zw` (already in `.env.production.example`), then run `php artisan optimize`. Keep local `.env` on `firebaseapp.com`.
+2. https://console.cloud.google.com, select project **fidelity-southview-park**, then **APIs & Services > Credentials**. Open the OAuth client called **Web client (auto created by Google Service)**:
+   - Authorised JavaScript origins: add `https://fidelity-southview.co.zw`
+   - Authorised redirect URIs: add `https://fidelity-southview.co.zw/__/auth/handler`
+   - Save. Changes can take a few minutes.
+3. Firebase > Authentication > Settings > Authorized domains must include `fidelity-southview.co.zw` (step 3 above).
+
+Google now shows "Sign in to fidelity-southview.co.zw".
+
+To show the association's **name and logo** as well:
+
+4. Google Cloud > **Google Auth Platform > Branding**: app name "Southview Park Residents", support email, logo `deploy/google-consent-logo-120.png`, home page `https://fidelity-southview.co.zw`, privacy `/privacy`, terms `/terms`, authorised domain `fidelity-southview.co.zw`.
+5. Verify domain ownership in Google Search Console (**URL prefix** method, **HTML file**): download the `googleXXXX.html` file, upload it with cPanel File Manager into `~/fspra/public/`, click Verify. This needs no Cloudflare access.
+6. Back in Branding, click **Submit for verification**. Google usually reviews in a few working days; until then the name may still show without the logo.
+
 These web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
 
 ### Branded emails

@@ -17,6 +17,11 @@ class SecurityHeaders
         app()->instance('csp-nonce', $nonce);
 
         $response = $next($request);
+        if ($request->is('__/*')) {
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+            return $response;
+        }
 
         if (function_exists('header_remove')) {
             @header_remove('X-Powered-By');
