@@ -57,6 +57,19 @@ Alpine.data('heroSlides', () => ({
         window.addEventListener('hero-restart', start);
     },
 }));
+Alpine.data('heroText', () => ({
+    on(n) { return Alpine.store('hero').i === n; },
+    cls(n) { return this.on(n) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'; },
+    get text0() { return this.cls(0); },
+    get text1() { return this.cls(1); },
+    get text2() { return this.cls(2); },
+    get hidden0() { return this.on(0) ? 'false' : 'true'; },
+    get hidden1() { return this.on(1) ? 'false' : 'true'; },
+    get hidden2() { return this.on(2) ? 'false' : 'true'; },
+    get tab0() { return this.on(0) ? '0' : '-1'; },
+    get tab1() { return this.on(1) ? '0' : '-1'; },
+    get tab2() { return this.on(2) ? '0' : '-1'; },
+}));
 Alpine.data('heroDots', () => ({
     dot(n) { return Alpine.store('hero').i === n ? 'w-8 bg-gold-500' : 'w-4 bg-cream/40 hover:bg-cream/70'; },
     get dot0() { return this.dot(0); },

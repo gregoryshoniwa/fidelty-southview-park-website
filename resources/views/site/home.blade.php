@@ -1,55 +1,77 @@
 @extends('layouts.site', ['canonical' => url('/')])
 
 @push('head')
-    <link rel="preload" as="image" href="/images/hero-estate-1280.webp" imagesrcset="/images/hero-estate-768.webp 768w, /images/hero-estate-1280.webp 1280w, /images/hero-estate-1920.webp 1920w" imagesizes="100vw" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/hero-estate-1280.webp" imagesrcset="/images/hero-estate-768.webp 768w, /images/hero-estate-1280.webp 1280w, /images/hero-estate-1376.webp 1376w" imagesizes="100vw" fetchpriority="high">
 @endpush
 
 @section('content')
-{{-- HERO --}}
-@php $heroVideo = \App\Models\Setting::get('hero_video_path'); @endphp
-<section class="relative isolate overflow-hidden bg-forest-900 text-cream" aria-labelledby="hero-title">
-    @php $slides = [['hero-estate', 'jpg'], ['hero-midday', 'webp'], ['hero-evening', 'webp']]; @endphp
-    <div class="absolute inset-0 -z-20" x-data="heroSlides" data-slides="3" aria-hidden="true">
-        @foreach ($slides as $i => [$img, $fallback])
+{{-- HERO: three photos, each with its own message --}}
+@php
+    $heroVideo = \App\Models\Setting::get('hero_video_path');
+    $slides = [
+        [
+            'img' => 'hero-estate', 'fallback' => 'jpg', 'label' => 'Southview Park at sunrise',
+            'eyebrow' => 'Fidelity Southview Park, Amalinda',
+            'title' => 'Services first.<br>Trust earned,<br><span class="text-gold-500">not asked for.</span>',
+            'lead' => 'Recover your Agreement of Sale, track your title deed and talk to your committee privately. No levies. Every fee printed before you pay.',
+            'primary' => ['/app/verify', 'Verify my stand'], 'secondary' => ['#services', 'See the services'],
+        ],
+        [
+            'img' => 'hero-deed', 'fallback' => 'jpg', 'label' => 'Keys and title deed',
+            'eyebrow' => 'Title deeds with Marufu Attorneys',
+            'title' => 'Your title deed,<br><span class="text-gold-500">step by step.</span>',
+            'lead' => 'Open your deed file once, upload your Agreement of Sale and ID, and follow all six steps from your phone. Message the lawyers on your file directly.',
+            'primary' => ['/app/deed', 'Open my deed file'], 'secondary' => ['/services/title-deed-tracker', 'How it works'],
+        ],
+        [
+            'img' => 'hero-evening', 'fallback' => 'jpg', 'label' => 'Jacaranda street at dusk',
+            'eyebrow' => 'One calm, official channel',
+            'title' => 'A safer, calmer<br><span class="text-gold-500">Southview Park.</span>',
+            'lead' => 'Official notices dated and signed, SMS alerts for what matters, and a private line to your committee. No group chats, no noise.',
+            'primary' => ['#notices', 'Get notices by SMS'], 'secondary' => ['/app/inbox/new', 'Write to the committee'],
+        ],
+    ];
+@endphp
+<section class="relative isolate overflow-hidden bg-forest-950 text-cream" aria-labelledby="hero-title" aria-roledescription="carousel">
+    <div class="absolute inset-0 -z-20" x-data="heroSlides" data-slides="{{ count($slides) }}" aria-hidden="true">
+        @foreach ($slides as $i => $sl)
             <picture class="hero-slide absolute inset-0 transition-opacity duration-[1400ms] ease-in-out" x-bind:class="slide{{ $i }}">
-                <source type="image/webp" srcset="/images/{{ $img }}-768.webp 768w, /images/{{ $img }}-1280.webp 1280w, /images/{{ $img }}-1920.webp 1920w" sizes="100vw">
-                <img src="/images/{{ $img }}-1280.{{ $fallback }}" alt="" width="1280" height="720" decoding="async" @if($i === 0) fetchpriority="high" @else loading="lazy" @endif class="hero-kenburns size-full object-cover">
+                <source type="image/webp" srcset="/images/{{ $sl['img'] }}-768.webp 768w, /images/{{ $sl['img'] }}-1280.webp 1280w, /images/{{ $sl['img'] }}-1376.webp 1376w" sizes="100vw">
+                <img src="/images/{{ $sl['img'] }}-1280.{{ $sl['fallback'] }}" alt="" width="1376" height="768" decoding="async" @if($i === 0) fetchpriority="high" @else loading="lazy" @endif class="hero-kenburns size-full object-cover object-[68%_center] lg:object-center">
             </picture>
         @endforeach
     </div>
     @if ($heroVideo)
         <video class="absolute inset-0 -z-20 hidden size-full object-cover" data-hero-video data-src="{{ asset($heroVideo) }}" muted loop playsinline preload="none" poster="/images/hero-estate-1280.webp" aria-hidden="true"></video>
     @endif
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-forest-950/95 via-forest-900/80 to-forest-900/30" aria-hidden="true"></div>
+    {{-- Readability: strong tint on phones (text covers the photo), soft left-side fade on large screens (photos already fade to green). --}}
+    <div class="absolute inset-0 -z-10 bg-gradient-to-b from-forest-950/80 via-forest-950/65 to-forest-950/85 lg:bg-gradient-to-r lg:from-forest-950/75 lg:via-forest-950/25 lg:to-transparent" aria-hidden="true"></div>
 
-    <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-[1.15fr_.85fr] lg:py-28" x-on:mouseenter="heroPause" x-on:mouseleave="heroResume">
-        <div class="flex flex-col gap-6">
-            <h1 id="hero-title" class="animate-rise font-serif text-[40px] font-bold leading-[1.04] [animation-delay:.08s] sm:text-5xl lg:text-[60px]">Services first.<br>Trust earned,<br><span class="text-gold-500">not asked for.</span></h1>
-            <p class="animate-rise max-w-xl text-lg leading-relaxed text-cream/85 [animation-delay:.16s]">Recover your Agreement of Sale, track your title deed, and talk to your committee privately. No levies. Every fee printed before you pay.</p>
-            <div class="animate-rise flex flex-wrap items-center gap-3 [animation-delay:.24s]">
-                <a href="/app/verify" class="btn btn-gold">Verify my stand <x-lucide name="arrow-right" class="size-4" /></a>
-                <a href="#services" class="btn btn-ghost">See the services</a>
-            </div>
-            <ul class="animate-rise flex flex-wrap gap-x-5 gap-y-2 text-sm text-cream/75 [animation-delay:.3s]">
-                <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Free to join</li>
-                <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Backed by Fidelity Life, Marufu Attorneys and TN CyberTech Bank</li>
-            </ul>
-            <div class="animate-rise mt-2 flex items-center gap-2 [animation-delay:.36s]" x-data="heroDots" role="group" aria-label="Hero images">
-                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot0" x-on:click="go0" aria-label="Show sunrise image"></button>
-                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot1" x-on:click="go1" aria-label="Show midday image"></button>
-                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot2" x-on:click="go2" aria-label="Show evening image"></button>
-            </div>
-        </div>
-        <div class="hidden flex-col items-end gap-3 lg:flex" aria-hidden="true">
-            @foreach ([
-                ['badge-check', 'bg-forest-100 text-forest-700', 'Verified resident', 'Your stand linked to your account in two minutes'],
-                ['landmark', 'bg-gold-100 text-gold-600', 'Title deed: step 4 of 6', 'Updated by the lawyers, message them from your phone'],
-                ['file-text', 'bg-forest-100 text-forest-700', 'Agreement of Sale downloaded', 'From Fidelity Life records, saved to your phone'],
-            ] as $i => [$icon, $tone, $t, $s])
-                <div class="animate-rise flex w-full max-w-md items-center gap-4 rounded-[12px] bg-white p-4 text-ink shadow-2xl" style="animation-delay: {{ .25 + $i * .1 }}s">
-                    <span class="flex size-12 items-center justify-center rounded-[8px] {{ $tone }}"><x-lucide :name="$icon" class="size-6" /></span>
-                    <span class="flex flex-col"><span class="font-extrabold text-forest-900">{{ $t }}</span><span class="text-[13px] text-muted">{{ $s }}</span></span>
+    <div class="wrap flex min-h-[600px] flex-col justify-center py-16 lg:min-h-[680px] lg:py-24" x-on:mouseenter="heroPause" x-on:mouseleave="heroResume">
+        <div class="grid max-w-2xl" x-data="heroText">
+            @foreach ($slides as $i => $sl)
+                <div class="col-start-1 row-start-1 flex flex-col gap-6 transition duration-700 ease-out" x-bind:class="text{{ $i }}" x-bind:aria-hidden="hidden{{ $i }}" @if($i > 0) aria-hidden="true" x-cloak @endif>
+                    <p class="eyebrow text-gold-400">{{ $sl['eyebrow'] }}</p>
+                    @if ($i === 0)
+                        <h1 id="hero-title" class="font-serif text-[40px] font-bold leading-[1.04] sm:text-5xl lg:text-[60px]">{!! $sl['title'] !!}</h1>
+                    @else
+                        <p class="font-serif text-[40px] font-bold leading-[1.04] sm:text-5xl lg:text-[60px]">{!! $sl['title'] !!}</p>
+                    @endif
+                    <p class="max-w-xl text-lg leading-relaxed text-cream/90">{{ $sl['lead'] }}</p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="{{ $sl['primary'][0] }}" class="btn btn-gold" @if($i > 0) tabindex="-1" @endif x-bind:tabindex="tab{{ $i }}">{{ $sl['primary'][1] }} <x-lucide name="arrow-right" class="size-4" /></a>
+                        <a href="{{ $sl['secondary'][0] }}" class="btn btn-ghost" @if($i > 0) tabindex="-1" @endif x-bind:tabindex="tab{{ $i }}">{{ $sl['secondary'][1] }}</a>
+                    </div>
                 </div>
+            @endforeach
+        </div>
+        <ul class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-cream/80">
+            <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Free to join</li>
+            <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Backed by Fidelity Life, Marufu Attorneys and TN CyberTech Bank</li>
+        </ul>
+        <div class="mt-6 flex items-center gap-2" x-data="heroDots" role="group" aria-label="Choose a slide">
+            @foreach ($slides as $i => $sl)
+                <button type="button" class="h-1.5 rounded-full transition-all duration-500" x-bind:class="dot{{ $i }}" x-on:click="go{{ $i }}" aria-label="Show slide {{ $i + 1 }}: {{ $sl['label'] }}"></button>
             @endforeach
         </div>
     </div>

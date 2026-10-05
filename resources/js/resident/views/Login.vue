@@ -107,7 +107,7 @@ async function detailsSubmit() {
 <template>
     <div class="grid min-h-dvh lg:grid-cols-2">
         <section class="relative hidden overflow-hidden bg-forest-900 text-cream lg:flex lg:flex-col lg:justify-between lg:p-12">
-            <img src="/images/hero-estate-1280.webp" alt="" class="absolute inset-0 size-full object-cover opacity-35">
+            <img src="/images/hero-estate-1280.webp" alt="" class="absolute inset-0 size-full object-cover object-right opacity-60">
             <a href="/" class="relative flex items-center gap-3"><img src="/images/logo-96.webp" width="48" height="48" alt="" class="size-12 rounded-[8px] bg-white"><span class="font-serif text-lg font-bold">Fidelity Southview Park<br><span class="font-sans text-xs font-extrabold uppercase tracking-[0.16em] text-gold-500">Residents Association</span></span></a>
             <div class="relative max-w-md"><h2 class="font-serif text-4xl font-bold leading-tight">Services first.<br><span class="text-gold-500">Trust earned.</span></h2><p class="mt-3 text-cream/80">Your stand, your documents and your committee, on your phone.</p></div>
         </section>
