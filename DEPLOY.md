@@ -68,7 +68,7 @@ This runs the queue (receipts, notifications), quiet-hour SMS, nightly ledger ch
 ## 7. Google Search
 
 - Robots: production serves `/robots.txt` allowing the public site and disallowing `/app`, `/partner`, `/admin`, `/api`. Non-production environments are fully noindexed.
-- Submit `https://fidelity-southview.co.zw/sitemap.xml` in Google Search Console (verify with the DNS TXT record in cPanel > Zone Editor).
+- Submit `https://fidelity-southview.co.zw/sitemap.xml` in Google Search Console (verify with a DNS TXT record in Cloudflare, which hosts this domain's DNS).
 - Every public page has a unique title, description, canonical URL, Open Graph image and JSON-LD (Organization, WebSite, BreadcrumbList, NewsArticle, FAQPage, Service, School/Church/LocalBusiness).
 
 ## 8. Switching integrations on later
@@ -96,6 +96,23 @@ Run `php artisan optimize` after every `.env` change.
 7. `php artisan optimize`.
 
 These web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
+
+### Firebase email domain (DNS at Cloudflare)
+
+The domain's DNS is hosted at **Cloudflare** (nameservers cory/perla.ns.cloudflare.com), so add these in Cloudflare > fidelity-southview.co.zw > **DNS > Records**, not in cPanel's Zone Editor:
+
+| Type | Name | Content | Proxy |
+| --- | --- | --- | --- |
+| TXT | `@` | **edit the existing SPF record** to `v=spf1 +a +mx +ip4:156.38.135.148 include:_spf.firebasemail.com -all` | n/a |
+| TXT | `@` | `firebase=fidelity-southview-park` | n/a |
+| CNAME | `firebase1._domainkey` | `mail-fidelity--southview-co-zw.dkim1._domainkey.firebasemail.com` | DNS only (grey cloud) |
+| CNAME | `firebase2._domainkey` | `mail-fidelity--southview-co-zw.dkim2._domainkey.firebasemail.com` | DNS only (grey cloud) |
+
+A domain may have only one SPF record, so merge Firebase into the existing one rather than adding a second. Then click **Verify** in Firebase; Cloudflare changes usually show within minutes.
+
+### Cloudflare proxy
+
+The website is served through Cloudflare's proxy, so `.env` must set `TRUSTED_PROXIES` to Cloudflare's ranges (already filled in `.env.example`). Without it every visitor looks like a Cloudflare IP and rate limits would block real residents together. Set Cloudflare SSL/TLS mode to **Full (strict)** once AutoSSL has issued the cPanel certificate.
 
 ## 10. Updating
 
