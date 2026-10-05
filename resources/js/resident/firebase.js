@@ -62,5 +62,8 @@ export function friendlyError(e) {
         'auth/invalid-action-code': 'This sign-in link has expired or was already used. Request a new one.',
         'auth/network-request-failed': 'No connection. Check your data and try again.',
         'auth/quota-exceeded': 'SMS codes are paused for today. Use Google or email, or try tomorrow.',
-    }[code] || e?.message || 'Sign-in failed. Please try again.';
+        'auth/operation-not-allowed': 'SMS codes are not available right now. Use Google or email to sign in.',
+        'auth/invalid-phone-number': 'Check the mobile number and try again.',
+        'auth/captcha-check-failed': 'The security check failed. Refresh the page and try again.',
+    }[code] || (console.warn('Firebase sign-in error', code, e?.message), 'Sign-in failed. Please try again.');
 }
