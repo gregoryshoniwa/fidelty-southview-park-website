@@ -7,6 +7,10 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Support\AdminAudit;
 use App\Filament\Support\Uploads;
 use App\Filament\Widgets;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Forms\View\FormsIconAlias;
@@ -40,6 +44,12 @@ class AdminPanelProvider extends PanelProvider
     public function boot(): void
     {
         AdminAudit::register();
+        // Pop-up windows sized to their content: compact by default; wider ones opt in.
+        Action::configureUsing(fn (Action $action) => $action->modalWidth(
+            $action instanceof CreateAction || $action instanceof EditAction || $action instanceof ViewAction
+                ? Width::ThreeExtraLarge   // full record forms
+                : Width::Large             // short prompts: assign, confirm, record expense
+        ));
         // Outline eye icons for show/hide password, matching the partner portal.
         FilamentIcon::register([
             FormsIconAlias::COMPONENTS_TEXT_INPUT_ACTIONS_SHOW_PASSWORD => Heroicon::OutlinedEye,

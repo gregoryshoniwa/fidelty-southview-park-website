@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 
@@ -46,6 +47,7 @@ class ViewThread extends ViewRecord
                 ->icon(Heroicon::OutlinedPaperAirplane)
                 ->modalHeading('Reply to resident')
                 ->modalDescription('Your reply is sent as "The committee" and the resident is notified.')
+                ->modalWidth(Width::TwoExtraLarge)
                 ->schema([
                     Textarea::make('body')->label('Message')->required()->rows(8)->maxLength(5000),
                 ])
