@@ -28,7 +28,7 @@ class VerificationService
 
     public function start(User $user, string $nationalId, string $standNumber): Resident
     {
-        if (! $user->phone) {
+        if (! $user->phone && ! $user->unconfirmed_phone) { // an unconfirmed number is enough: the committee checks it with the stand
             throw ValidationException::withMessages(['phone' => 'Add your mobile number first, so we can send you updates.']);
         }
         $resident = $user->resident()->firstOrCreate([]);

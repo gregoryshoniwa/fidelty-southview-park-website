@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ShieldCheck, Check, FileText, Landmark, MessageSquare, Info } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 import { api } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
 import PhoneLink from '../components/PhoneLink.vue';
@@ -20,7 +21,11 @@ async function start() {
         const r = await api('/verify/start', { method: 'POST', body: { national_id: nid.value, stand_number: stand.value, consent: consent.value } });
         if (r.status === 'review') { await auth.load(true); step.value = 4; return; }
         masked.value = r.phone_on_file_masked; devCode.value = r.dev_code; step.value = 2;
-    } catch (e) { errors.value = e.errors || {}; } finally { busy.value = false; }
+    } catch (e) {
+        errors.value = e.errors || {};
+        const other = Object.keys(errors.value).find((k) => !['national_id', 'stand_number', 'consent'].includes(k));
+        if (other) toast.error(errors.value[other][0]);
+    } finally { busy.value = false; }
 }
 async function confirm() {
     busy.value = true; errors.value = {};

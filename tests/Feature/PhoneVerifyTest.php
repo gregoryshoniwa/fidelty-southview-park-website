@@ -154,4 +154,13 @@ class PhoneVerifyTest extends TestCase
         $this->actingAs($this->newcomer());
         $this->postJson('/api/me/phone/unconfirmed', ['phone' => '0772996330'])->assertNotFound();
     }
+
+    public function test_unconfirmed_number_is_enough_to_start_stand_verification(): void
+    {
+        $u = $this->newcomer();
+        $u->forceFill(['unconfirmed_phone' => '+263772996330'])->save();
+        $this->actingAs($u);
+        $this->postJson('/api/verify/start', ['national_id' => '63-1198624K45', 'stand_number' => '5813', 'consent' => true])
+            ->assertJsonMissingValidationErrors('phone');
+    }
 }
