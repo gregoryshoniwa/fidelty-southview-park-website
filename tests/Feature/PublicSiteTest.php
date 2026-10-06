@@ -111,6 +111,7 @@ class PublicSiteTest extends TestCase
 
     public function test_notices_are_followed_on_whatsapp_channel_when_configured(): void
     {
+        config(['fspra.whatsapp.channel_url' => null]);
         $this->get('/notices')->assertOk()->assertDontSee('Follow the channel')->assertDontSee('by SMS');
         $this->get('/')->assertOk()->assertDontSee('by SMS')->assertDontSee('on WhatsApp');
         $this->post('/subscribe', ['phone' => '0771234567'])->assertNotFound();
