@@ -43,12 +43,12 @@ These exist only on a local copy seeded with `php artisan migrate:fresh --seed`.
 | Partner portal, `/partner` (Marufu Attorneys) | phone `0770000010` | `Partner!2026` |
 | Partner portal, `/partner` (TN CyberTech Bank) | phone `0770000011` | `Partner!2026` |
 | Partner portal, `/partner` (Fidelity Life) | phone `0770000012` | `Partner!2026` |
-| Resident app, `/app` | any Zimbabwean mobile, e.g. `0771234567` | none (SMS code) |
+| Resident app, `/app` | Google, email link, or WhatsApp once set up | none (no passwords) |
 
-- **SMS codes:** for partners and residents, the code is shown on screen locally because no real SMS is sent.
-- **Demo resident:** `0771234567` is already verified on stand 1001.
+- **Partner SMS codes:** shown on screen locally because no real SMS is sent.
+- **Demo resident:** `0771234567` is already verified on stand 1001. To sign in as them, set test `WHATSAPP_*` values, press **Continue with WhatsApp**, then run `php artisan fspra:whatsapp-test <code> 0771234567`.
 - **Admin two-factor:** the first admin sign-in shows a QR code. Scan it with Google Authenticator or Microsoft Authenticator, enter the 6-digit code, and keep the recovery codes.
-- **Verifying a test stand:** use any stand from 1001 to 1200 with an ID like `63-123456-A-12`.
+- **Verifying a stand:** with `FIDELITY_DRIVER=manual` (as live) any stand goes to the committee; confirm it in Admin > Community > Residents. With `fake`, stands 1001 to 1200 match instantly.
 - **Production:** create the real committee admin with `php artisan fspra:admin` (see [DEPLOY.md](DEPLOY.md)).
 
 ## Tests
