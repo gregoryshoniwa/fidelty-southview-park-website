@@ -24,7 +24,7 @@
         @if ($comingSoon)
             <div class="not-prose mb-8 flex gap-4 rounded-[12px] border border-gold-500/40 bg-gold-100 p-5">
                 <x-lucide name="clock" class="size-6 text-gold-600" />
-                <div><p class="font-extrabold text-forest-900">Coming soon</p><p class="text-[15px] text-muted">{{ $service->slug === 'pay-bills' ? 'Online bill payments open once the TN CyberTech Bank gateway is connected. Subscribe to notices and we will tell you the day it opens.' : 'This service opens in phase '.$service->phase.'. We open each phase only after the partner has signed and the previous phase works.' }}</p></div>
+                <div><p class="font-extrabold text-forest-900">Coming soon</p><p class="text-[15px] text-muted">{{ $service->slug === 'pay-bills' ? 'Online bill payments open once the TN CyberTech Bank gateway is connected. We will announce the day it opens on the notice board.' : 'This service opens in phase '.$service->phase.'. We open each phase only after the partner has signed and the previous phase works.' }}</p></div>
             </div>
         @endif
         {!! \Illuminate\Support\Str::sanitizeHtml((string) $service->body) !!}
@@ -41,7 +41,11 @@
             @if (! $comingSoon)
                 <a href="{{ $cta[0] }}" class="btn btn-gold w-full">{{ $cta[1] }}</a>
             @else
-                <a href="{{ route('notices') }}#subscribe" class="btn btn-outline w-full">Tell me when it opens</a>
+                @if ($channel = config('fspra.whatsapp.channel_url'))
+                    <a href="{{ $channel }}" target="_blank" rel="noopener" class="btn btn-outline w-full">Follow for updates on WhatsApp</a>
+                @else
+                    <a href="{{ route('notices') }}" class="btn btn-outline w-full">Watch the notice board</a>
+                @endif
             @endif
         </div>
         @php $providers = $service->providerPartners()->filter(fn ($p) => $p->logoUrl()); @endphp

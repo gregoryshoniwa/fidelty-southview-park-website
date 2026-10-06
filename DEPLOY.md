@@ -149,6 +149,8 @@ With `none`, no SMS is sent. Residents prove their number on WhatsApp, or type i
 **Testing on your computer** (Meta cannot reach localhost): set the three `WHATSAPP_*` values to anything, press **Get my code**, then run
 `php artisan fspra:whatsapp-test 123456 0771234567` with the code shown. The page continues by itself.
 
+**WhatsApp channel for notices:** residents follow the association's channel instead of subscribing by SMS. In WhatsApp open **Updates > (your channel) > Copy link**, put it in `.env` as `WHATSAPP_CHANNEL_URL=https://whatsapp.com/channel/...`, then `php artisan optimize`. The **Get notices on WhatsApp** buttons appear on the home and notices pages; while it is blank they stay hidden.
+
 ## 10. Updating
 
 Build a new zip, upload, extract over `~/fspra` (your `.env` and `storage/` are not in the zip), then:

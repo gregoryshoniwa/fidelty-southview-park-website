@@ -36,7 +36,7 @@ class CommunityController extends Controller
             'slug' => $n->slug, 'title' => $n->title, 'excerpt' => $n->excerpt, 'category' => $n->category,
             'signed_by' => $n->signed_by_role, 'pinned' => $n->pinned, 'published_at' => $n->published_at->toIso8601String(),
             'sponsored' => $n->category === 'sponsored',
-        ])]);
+        ]), 'categories' => (object) Notice::liveCategories()]);
     }
 
     public function polls(Request $request)

@@ -14,11 +14,7 @@ use App\Models\Resident;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\Sponsorship;
-use App\Models\Subscriber;
 use App\Models\Thread;
-use App\Services\OtpService;
-use App\Services\Phone;
-use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -76,7 +72,7 @@ class SiteController extends Controller
             $q->where('category', $cat);
         }
 
-        return view('site.notices', ['notices' => $q->paginate(12)->withQueryString(), 'category' => $cat, 'rect' => Sponsorship::live('medium_rect')->inRandomOrder()->first()]);
+        return view('site.notices', ['notices' => $q->paginate(12)->withQueryString(), 'category' => $cat, 'tabs' => Notice::liveCategories(), 'rect' => Sponsorship::live('medium_rect')->inRandomOrder()->first()]);
     }
 
     public function notice(Notice $notice)
@@ -149,25 +145,6 @@ class SiteController extends Controller
         $page = CmsPage::where('slug', $slug)->where('published', true)->firstOrFail();
 
         return view('site.cms', ['page' => $page]);
-    }
-
-    public function subscribe(Request $request, OtpService $otp)
-    {
-        $data = $request->validate(['phone' => ['required', 'string', 'max:20'], 'categories' => ['nullable', 'array'], 'categories.*' => ['in:'.implode(',', array_keys(Notice::CATEGORIES))], 'website' => ['prohibited']]);
-        $phone = Phone::normalise($data['phone']);
-        if (! $phone) {
-            return back()->withErrors(['phone' => 'Enter a valid mobile number.'])->withInput();
-        }
-        $sub = Subscriber::firstOrNew(['phone' => $phone]);
-        $isNew = ! $sub->exists;
-        $sub->categories = $data['categories'] ?? ['urgent', 'services', 'deeds', 'security'];
-        $sub->save();
-        // One confirmation SMS per number, ever: the form cannot be used to pump SMS.
-        if ($isNew) {
-            app(SmsService::class)->send($phone, 'You are subscribed to official Southview Park notices. Reply STOP to unsubscribe.', 'subscribe');
-        }
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Subscribed. Official notices will reach you by SMS.']);
     }
 
     public function sitemap()

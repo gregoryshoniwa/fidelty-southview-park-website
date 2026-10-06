@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CmsPage;
+use App\Models\CommunityPage;
+use App\Models\Notice;
 use App\Models\Sponsorship;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -17,7 +20,7 @@ class PublicSiteTest extends TestCase
     {
         return [['/'], ['/services'], ['/services/title-deed-tracker'], ['/services/pay-bills'], ['/notices'], ['/community'],
             ['/about'], ['/faq'], ['/advertise'], ['/fees'], ['/privacy'], ['/terms'],
-            ['/complaints'], ['/constitution'], ['/app'], ['/app/login'], ['/partner/login']];
+            ['/complaints'], ['/app'], ['/app/login'], ['/partner/login']];
     }
 
     #[DataProvider('pages')]
@@ -29,6 +32,34 @@ class PublicSiteTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'none'", $res->headers->get('Content-Security-Policy'));
         $this->assertStringContainsString("object-src 'none'", $res->headers->get('Content-Security-Policy'));
         $this->assertNull($res->headers->get('X-Powered-By'));
+    }
+
+    public function test_notice_tabs_only_show_categories_with_published_notices(): void
+    {
+        $html = $this->get('/notices')->assertOk()->getContent();
+        $this->assertStringContainsString('category=services', $html);
+        $this->assertStringNotContainsString('category=events', $html);
+
+        Notice::create(['title' => 'Fun day', 'slug' => 'fun-day', 'category' => 'events', 'body' => '<p>Saturday.</p>', 'published_at' => now()->subMinute()]);
+        Notice::create(['title' => 'Later', 'slug' => 'later', 'category' => 'finance', 'body' => '<p>Soon.</p>', 'published_at' => now()->addDay()]);
+
+        $html = $this->get('/notices')->getContent();
+        $this->assertStringContainsString('category=events', $html);
+        $this->assertStringNotContainsString('category=finance', $html);
+        $this->actingAs($this->resident())->getJson('/api/notices')->assertOk()->assertJsonPath('categories.events', 'Events')->assertJsonMissingPath('categories.finance');
+    }
+
+    public function test_constitution_is_hidden_until_published(): void
+    {
+        $this->get('/constitution')->assertNotFound();
+        $this->get('/')->assertOk()->assertDontSee('Read the constitution')->assertDontSee('>Constitution<', false);
+        $this->get('/about')->assertOk()->assertDontSee('Read the constitution');
+        $this->assertStringNotContainsString('/constitution', $this->get('/sitemap.xml')->getContent());
+
+        CmsPage::where('slug', 'constitution')->update(['published' => true]);
+
+        $this->get('/constitution')->assertOk();
+        $this->get('/')->assertSee('Read the constitution')->assertSee('>Constitution<', false);
     }
 
     public function test_home_has_seo_essentials(): void
@@ -50,7 +81,7 @@ class PublicSiteTest extends TestCase
 
     public function test_community_listing_page_says_it_is_not_a_partner(): void
     {
-        \App\Models\CommunityPage::create(['type' => 'school', 'name' => 'Test School', 'slug' => 'test-school', 'tagline' => 'A school', 'address' => 'Harare', 'verified' => false, 'active' => true]);
+        CommunityPage::create(['type' => 'school', 'name' => 'Test School', 'slug' => 'test-school', 'tagline' => 'A school', 'address' => 'Harare', 'verified' => false, 'active' => true]);
         $this->get('/community/test-school')->assertOk()->assertSee('not yet a partner');
     }
 
@@ -78,12 +109,16 @@ class PublicSiteTest extends TestCase
         $this->get('/does-not-exist')->assertNotFound()->assertSee('Page not found');
     }
 
-    public function test_subscribe_form_validates_and_honeypot(): void
+    public function test_notices_are_followed_on_whatsapp_channel_when_configured(): void
     {
-        $this->post('/subscribe', ['phone' => 'abc'])->assertSessionHasErrors('phone');
-        $this->post('/subscribe', ['phone' => '0771234567', 'website' => 'spam'])->assertSessionHasErrors('website');
-        $this->post('/subscribe', ['phone' => '0771234567'])->assertSessionHasNoErrors();
-        $this->assertDatabaseHas('subscribers', ['phone' => '+263771234567']);
+        $this->get('/notices')->assertOk()->assertDontSee('Follow the channel')->assertDontSee('by SMS');
+        $this->get('/')->assertOk()->assertDontSee('by SMS')->assertDontSee('on WhatsApp');
+        $this->post('/subscribe', ['phone' => '0771234567'])->assertNotFound();
+
+        config(['fspra.whatsapp.channel_url' => 'https://whatsapp.com/channel/0029TestChannel']);
+
+        $this->get('/notices')->assertSee('Follow the channel')->assertSee('https://whatsapp.com/channel/0029TestChannel');
+        $this->get('/')->assertSee('Get notices on WhatsApp')->assertSee('Follow on WhatsApp');
     }
 
     public function test_ad_click_counts_and_redirects(): void

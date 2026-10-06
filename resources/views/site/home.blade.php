@@ -8,6 +8,7 @@
 {{-- HERO: three photos, each with its own message --}}
 @php
     $heroVideo = \App\Models\Setting::get('hero_video_path');
+    $channel = config('fspra.whatsapp.channel_url');
     $slides = [
         [
             'img' => 'hero-estate', 'fallback' => 'jpg', 'label' => 'Southview Park at sunrise',
@@ -27,8 +28,8 @@
             'img' => 'hero-evening', 'fallback' => 'jpg', 'label' => 'Jacaranda street at dusk',
             'eyebrow' => 'One calm, official channel',
             'title' => 'A safer, calmer<br><span class="text-gold-500">Southview Park.</span>',
-            'lead' => 'Official notices dated and signed, SMS alerts for what matters, and a private line to your committee. No group chats, no noise.',
-            'primary' => ['#notices', 'Get notices by SMS'], 'secondary' => ['/app/inbox/new', 'Write to the committee'],
+            'lead' => 'Official notices dated and signed, '.($channel ? 'a WhatsApp channel for what matters, ' : '').'and a private line to your committee. No group chats, no noise.',
+            'primary' => $channel ? [$channel, 'Follow on WhatsApp'] : ['#notices', 'Read the notices'], 'secondary' => ['/app/inbox/new', 'Write to the committee'],
         ],
     ];
 @endphp
@@ -161,7 +162,7 @@
         <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
             <x-section-head eyebrow="Notice board" title="One official channel. Calm, dated, signed." lead="No group chats. Official notices only, each dated and signed by a committee role. Something to raise? Write to the committee privately." id="notices-title" />
             <div class="flex flex-wrap gap-2">
-                <button type="button" class="btn btn-green" x-on:click="openSubscribe">Get notices by SMS</button>
+                @if ($channel)<a href="{{ $channel }}" target="_blank" rel="noopener" class="btn btn-green">Get notices on WhatsApp</a>@endif
                 <a href="/app/inbox/new" class="btn btn-outline">Write to the committee</a>
             </div>
         </div>
@@ -183,16 +184,17 @@
 </section>
 
 {{-- GOVERNANCE --}}
+@php $constitution = \App\Models\CmsPage::live('constitution'); @endphp
 <section class="bg-forest-900 text-cream" aria-labelledby="gov-title">
     <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-24">
         <div class="flex flex-col gap-5">
-            <x-section-head eyebrow="About the association" title="Run by rules you can read." lead="The constitution, the minutes of every meeting and the committee's term are public. Payments out need two signatories. The accounts are reviewed independently every year." dark id="gov-title" />
+            <x-section-head eyebrow="About the association" title="Run by rules you can read." :lead="($constitution ? 'The constitution, the minutes' : 'The minutes').' of every meeting and the committee\'s term are public. Payments out need two signatories. The accounts are reviewed independently every year.'" dark id="gov-title" />
             <ul class="flex flex-col gap-2.5 text-[15px]">
                 <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Fees printed before every payment</li>
                 <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Minutes published within 7 days</li>
                 <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Founding committee term ends after 12 months, then you vote</li>
             </ul>
-            <div class="flex flex-wrap gap-3"><a href="{{ route('constitution') }}" class="btn btn-gold">Read the constitution</a><a href="{{ route('about') }}#minutes" class="btn btn-ghost">Latest minutes</a></div>
+            <div class="flex flex-wrap gap-3">@if ($constitution)<a href="{{ route('constitution') }}" class="btn btn-gold">Read the constitution</a>@endif<a href="{{ route('about') }}#minutes" @class(['btn', 'btn-ghost' => $constitution, 'btn-gold' => ! $constitution])>Latest minutes</a></div>
         </div>
         <dl class="grid grid-cols-2 gap-4">
             @foreach ([['7', 'Committee members, named with their roles'], ['2', 'Signatories on every payment out'], [$stats['open_inbox'], 'Open requests in the committee inbox'], [$stats['answered_pct'] !== null ? $stats['answered_pct'].'%' : 'New', 'Answered within 48 hours']] as [$n, $l])
@@ -233,5 +235,4 @@
     </div>
 </section>
 
-@include('partials.subscribe-dialog')
 @endsection

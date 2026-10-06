@@ -30,6 +30,14 @@ class Notice extends Model
         return $q->whereNotNull('published_at')->where('published_at', '<=', now());
     }
 
+    /** Categories that have at least one published notice, as key => label. Sponsored notices have no tab. */
+    public static function liveCategories(): array
+    {
+        $live = static::published()->where('category', '!=', 'sponsored')->distinct()->pluck('category')->all();
+
+        return array_intersect_key(self::CATEGORIES, array_flip($live));
+    }
+
     public function sponsorship(): BelongsTo
     {
         return $this->belongsTo(Sponsorship::class);

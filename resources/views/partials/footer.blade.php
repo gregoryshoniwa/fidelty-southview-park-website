@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3">
             <img src="/images/logo-128.webp" width="64" height="64" alt="Fidelity Southview Park Residents Association logo" class="size-16 rounded-[8px] bg-white" loading="lazy">
             <p class="font-serif text-lg font-bold text-cream">Fidelity Southview Park Residents Association</p>
-            <p class="text-sm leading-relaxed">Amalinda, Harare. A service-first association.<br>{{ config('fspra.site_domain') }}</p>
+            <p class="text-sm leading-relaxed">Amalinda, Harare. A service-first association.</p>
         </div>
         <div>
             <h2 class="eyebrow mb-3 font-sans text-gold-500">Services</h2>
@@ -19,7 +19,7 @@
             <h2 class="eyebrow mb-3 font-sans text-gold-500">Association</h2>
             <ul class="space-y-2 text-sm">
                 <li><a class="hover:text-gold-400" href="{{ route('about') }}">About and committee</a></li>
-                <li><a class="hover:text-gold-400" href="{{ route('constitution') }}">Constitution</a></li>
+                @if (\App\Models\CmsPage::live('constitution'))<li><a class="hover:text-gold-400" href="{{ route('constitution') }}">Constitution</a></li>@endif
                 <li><a class="hover:text-gold-400" href="{{ route('notices') }}">Notice board</a></li>
                 <li><a class="hover:text-gold-400" href="{{ route('faq') }}">Questions and answers</a></li>
                 <li><a class="hover:text-gold-400" href="/app/inbox/new">Write to the committee</a></li>

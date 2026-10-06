@@ -26,7 +26,6 @@ Route::controller(SiteController::class)->group(function () {
     Route::get('/privacy', fn () => app(SiteController::class)->cms('privacy'))->name('privacy');
     Route::get('/terms', fn () => app(SiteController::class)->cms('terms'))->name('terms');
     Route::get('/complaints', fn () => app(SiteController::class)->cms('complaints'))->name('complaints');
-    Route::post('/subscribe', 'subscribe')->middleware('throttle:forms')->name('subscribe');
     Route::get('/sitemap.xml', 'sitemap')->name('sitemap');
     Route::get('/robots.txt', 'robots');
     Route::get('/manifest.webmanifest', 'manifest');

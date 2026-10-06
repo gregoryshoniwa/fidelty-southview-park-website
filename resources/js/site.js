@@ -2,9 +2,6 @@
 import Alpine from '@alpinejs/csp';
 
 Alpine.data('page', () => ({
-    subscribeOpen: false,
-    openSubscribe() { this.subscribeOpen = true; document.body.style.overflow = 'hidden'; },
-    closeSubscribe() { this.subscribeOpen = false; document.body.style.overflow = ''; },
     heroPause() { window.dispatchEvent(new Event('hero-pause')); },
     heroResume() { window.dispatchEvent(new Event('hero-resume')); },
 }));

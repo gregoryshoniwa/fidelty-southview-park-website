@@ -4,7 +4,7 @@
     $house = [
         'billboard' => ['headline' => 'Your stand. Your documents. Two minutes.', 'body' => 'Verify with Fidelity Life records and download your Agreement of Sale from your phone.', 'cta' => 'Verify my stand', 'url' => '/app/verify', 'image' => '/images/ads/house-billboard.webp'],
         'medium_rect' => ['headline' => 'Advertise to every verified household', 'body' => 'Sponsored tiles, notices and banners from US$25 a month.', 'cta' => 'See rates', 'url' => '/advertise', 'image' => '/images/ads/house-rect.webp'],
-        'half_page' => ['headline' => 'Official notices by SMS', 'body' => 'Dated, signed and calm. No group chats.', 'cta' => 'Subscribe', 'url' => '/notices#subscribe', 'image' => '/images/ads/house-half.webp'],
+        'half_page' => ['headline' => 'Official notices, dated and signed', 'body' => 'One calm, official channel. No group chats.', 'cta' => 'Read the notices', 'url' => '/notices', 'image' => '/images/ads/house-half.webp'],
     ][$placement] ?? null;
     $headline = $ad?->headline ?? $house['headline'] ?? '';
     $body = $ad?->body ?? $house['body'] ?? '';

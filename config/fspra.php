@@ -31,6 +31,7 @@ return [
         'app_secret' => env('WHATSAPP_APP_SECRET'),           // Meta app > App settings > Basic > App secret
         'token' => env('WHATSAPP_TOKEN'),                     // optional: lets us reply "Thank you, confirmed"
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'), // optional, with the token
+        'channel_url' => env('WHATSAPP_CHANNEL_URL'),         // public channel link; shows the "Follow" buttons for notices
     ],
     'consent_version' => '2026-10-01',
     'documents' => ['max_kb' => 8192, 'mimes' => ['pdf', 'jpg', 'jpeg', 'png', 'webp']],

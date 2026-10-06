@@ -4,14 +4,18 @@ import { Megaphone, Pin } from 'lucide-vue-next';
 import { api, fmt } from '@/shared/api.js';
 import Skeleton from '@/shared/Skeleton.vue';
 import EmptyState from '@/shared/EmptyState.vue';
-const cats = { '': 'All', urgent: 'Urgent', services: 'Services', deeds: 'Deeds', finance: 'Finance', events: 'Events', security: 'Security' };
-const cat = ref(''); const items = ref(null);
-async function load() { items.value = null; items.value = (await api('/notices' + (cat.value ? '?category=' + cat.value : ''))).data; }
+// Tabs only for categories that have a published notice.
+const cats = ref({}); const cat = ref(''); const items = ref(null);
+async function load() {
+    items.value = null;
+    const res = await api('/notices' + (cat.value ? '?category=' + cat.value : ''));
+    cats.value = { '': 'All', ...res.categories }; items.value = res.data;
+}
 onMounted(load); watch(cat, load);
 </script>
 <template>
     <div class="flex flex-col gap-4">
-        <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"><button v-for="(l, k) in cats" :key="k" class="btn btn-sm shrink-0" :class="cat === k ? 'btn-green' : 'btn-outline'" @click="cat = k">{{ l }}</button></div>
+        <div v-if="Object.keys(cats).length > 1" class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"><button v-for="(l, k) in cats" :key="k" class="btn btn-sm shrink-0" :class="cat === k ? 'btn-green' : 'btn-outline'" @click="cat = k">{{ l }}</button></div>
         <Skeleton v-if="!items" />
         <EmptyState v-else-if="!items.length" :icon="Megaphone" title="No notices here yet" />
         <div v-else class="card divide-y divide-line">

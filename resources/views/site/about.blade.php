@@ -38,7 +38,7 @@
                     <li class="flex gap-2.5"><x-lucide name="check" class="mt-0.5 size-4 text-forest-700" />{{ $c }}</li>
                 @endforeach
             </ul>
-            <a href="{{ route('constitution') }}" class="btn btn-gold mt-5 w-full">Read the constitution</a>
+            @if (\App\Models\CmsPage::live('constitution'))<a href="{{ route('constitution') }}" class="btn btn-gold mt-5 w-full">Read the constitution</a>@endif
         </div>
         <div class="card grid grid-cols-2 gap-4 p-6">
             <div><p class="font-serif text-3xl font-bold text-forest-700">{{ $stats['open_inbox'] }}</p><p class="text-xs text-muted">Open inbox requests</p></div>

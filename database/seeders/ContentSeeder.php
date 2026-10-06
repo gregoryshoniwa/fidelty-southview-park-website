@@ -63,7 +63,7 @@ HTML],
 HTML],
         ];
         foreach ($pages as $slug => [$title, $meta, $body]) {
-            CmsPage::updateOrCreate(['slug' => $slug], ['title' => $title, 'meta_description' => $meta, 'body' => $body, 'published' => true]);
+            CmsPage::updateOrCreate(['slug' => $slug], ['title' => $title, 'meta_description' => $meta, 'body' => $body, 'published' => $slug !== 'constitution']); // constitution: published by the committee when ready
         }
 
         $faqs = [
@@ -73,7 +73,7 @@ HTML],
             ['title-deed-tracker', 'Who is processing the title deeds?', 'Five law firms are processing Southview Park title deeds: Marufu Attorneys, V.S. Nyangulu & Associates, Mudimu & Maguranyanga, Diza Attorneys and Sinyoro & Partners. Your firm is on your Agreement of Sale or the letter from Fidelity Life. Choose it when you open your file in the app, then follow its progress there.'],
             ['title-deed-tracker', 'Which documents do I need for my deed?', 'Your Agreement of Sale, both sides of your national ID, proof of residence, and later a council rates clearance certificate. You upload them from the Deed Tracker.'],
             ['title-deed-tracker', 'How long does a title deed take?', 'It depends mostly on council clearance and the Deeds Registry. The tracker shows the exact step your file is on, and you can message the lawyers about it.'],
-            ['pay-bills', 'When can I pay bills here?', 'Online payments open once the TN CyberTech Bank gateway is connected. Subscribe to SMS notices and we will tell you the day it opens.'],
+            ['pay-bills', 'When can I pay bills here?', 'Online payments open once the TN CyberTech Bank gateway is connected. We will announce the day it opens on the notice board.'],
             ['general', 'Is there a levy or membership fee?', 'No. The association does not charge levies. It is funded by small disclosed commissions and advertising.'],
             ['general', 'Who can see my messages to the committee?', 'Only the committee members handling your request. Other residents cannot see them.'],
             ['general', 'How do I delete my account?', 'In the app go to Settings, then Delete my account. We delete your documents and anonymise your records within 30 days.'],
@@ -87,7 +87,7 @@ HTML],
         $notices = [
             ['Welcome to the Southview Park residents platform', 'services', 'Chairperson', 'Verify your stand with Fidelity Life records, download your Agreement of Sale, and write to the committee privately.', '<p>The association is open. Start by verifying your stand: it takes two minutes and needs your ID number, your stand number and the phone on your Agreement of Sale.</p><p>There is no levy and no membership fee.</p>', true, 1],
             ['Title deed files now open with all five law firms', 'deeds', 'Secretary', 'Open your deed file, upload your Agreement of Sale and ID, and follow every step from your phone.', '<p>Verified residents can now open a title deed file from the app. Choose the law firm handling your deed: it will confirm receipt of your documents within 5 working days and update your file at every step.</p>', false, 2],
-            ['Online bill payments are coming soon', 'services', 'Vice Chairperson', 'Council rates, ZESA and airtime payments open when the bank gateway is connected.', '<p>We are finalising the integration with TN CyberTech Bank. Until then, please continue paying bills through your usual channels. Subscribe to SMS notices to hear the day it opens.</p>', false, 3],
+            ['Online bill payments are coming soon', 'services', 'Vice Chairperson', 'Council rates, ZESA and airtime payments open when the bank gateway is connected.', '<p>We are finalising the integration with TN CyberTech Bank. Until then, please continue paying bills through your usual channels. We will announce the day it opens on the notice board.</p>', false, 3],
             ['How to reach the committee', 'services', 'Secretary', 'There is no group chat. Write to the committee privately and get a reference number.', '<p>We have chosen not to run a WhatsApp group. Every message to the committee is private, gets a reference number and a reply within 48 hours.</p>', false, 4],
         ];
         foreach ($notices as [$title, $cat, $role, $excerpt, $body, $pinned, $daysAgo]) {
@@ -104,7 +104,7 @@ HTML],
             ['billboard', 'Your stand. Your documents. Two minutes.', 'Verify with Fidelity Life records and download your Agreement of Sale from your phone.', 'images/ads/house-billboard.webp', '/app/verify', 'Verify my stand'],
             ['billboard', 'Track your title deed from your phone', 'Open your deed file once and follow every step with your law firm.', 'images/ads/house-billboard-deed.webp', '/services/title-deed-tracker', 'Open my deed file'],
             ['medium_rect', 'Advertise to every verified household', 'Sponsored tiles, notices and banners.', 'images/ads/house-rect.webp', '/advertise', 'See rates'],
-            ['half_page', 'Official notices by SMS', 'Dated, signed and calm. No group chats.', 'images/ads/house-half.webp', '/notices#subscribe', 'Subscribe'],
+            ['half_page', 'Official notices, dated and signed', 'One calm, official channel. No group chats.', 'images/ads/house-half.webp', '/notices', 'Read the notices'],
             ['sponsored_tile', 'Your business here', 'Reach every verified household in Southview Park.', 'images/covers/advertise.webp', '/advertise', 'Advertise'],
         ];
         foreach ($ads as [$slot, $headline, $body, $creative, $url, $cta]) {
