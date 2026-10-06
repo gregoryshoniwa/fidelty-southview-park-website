@@ -210,8 +210,8 @@
         <h2 id="partners-title" class="eyebrow font-sans text-muted">Partners who stand behind each service</h2>
         <ul class="flex flex-wrap items-center justify-center gap-4">
             @php
-                // Gold logos sit on deep green; Fidelity Life (red on white) stays on white, in the middle.
-                $order = ['marufu-attorneys' => 0, 'fidelity-life' => 1, 'tn-cybertech-bank' => 2];
+                // Fidelity Life, the developer, leads; gold logos sit on deep green, the rest on white.
+                $order = ['fidelity-life' => 0, 'tn-cybertech-bank' => 1, 'marufu-attorneys' => 2];
                 $dark = ['marufu-attorneys' => 'images/partners/marufu-attorneys-white.webp', 'tn-cybertech-bank' => null];
             @endphp
             @foreach ($partners->sortBy(fn ($p) => $order[$p->slug] ?? 9) as $p)
