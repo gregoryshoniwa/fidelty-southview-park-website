@@ -76,6 +76,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(false) // always light, like the resident app and partner portal
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->renderHook(PanelsRenderHook::SIMPLE_LAYOUT_START, fn () => view('filament.auth-aside'))
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.search-shortcut'))
             ->font('Manrope Variable', provider: LocalFontProvider::class)
             ->favicon('/favicon.ico')
             ->colors([
