@@ -12,8 +12,8 @@ const portal = usePortal();
 
 const step = ref('password');
 const busy = ref(false);
-const form = reactive({ phone: '', password: '', code: '' });
-const errors = reactive({ phone: '', password: '', code: '', general: '' });
+const form = reactive({ email: '', password: '', code: '' });
+const errors = reactive({ email: '', password: '', code: '', general: '' });
 const masked = ref('');
 const devCode = ref('');
 
@@ -36,15 +36,15 @@ async function submitPassword() {
     clearErrors();
     busy.value = true;
     try {
-        const res = await api('/partner/auth/password', { method: 'POST', body: { phone: form.phone, password: form.password }, quiet: true });
-        masked.value = res.phone_masked || '';
+        const res = await api('/partner/auth/password', { method: 'POST', body: { email: form.email, password: form.password }, quiet: true });
+        masked.value = res.email_masked || '';
         devCode.value = res.dev_code || '';
         form.code = '';
         step.value = 'otp';
         await nextTick();
         document.getElementById('code')?.focus();
     } catch (e) {
-        handle(e, ['phone', 'password']);
+        handle(e, ['email', 'password']);
     } finally {
         busy.value = false;
     }
@@ -94,12 +94,12 @@ function restart() {
                 <template v-if="step === 'password'">
                     <p class="eyebrow text-gold-600">Step 1 of 2</p>
                     <h1 class="mt-1 font-serif text-3xl font-bold text-forest-900">Sign in</h1>
-                    <p class="mt-1 text-sm text-muted">Use the phone number and password your organisation registered with the association.</p>
+                    <p class="mt-1 text-sm text-muted">Use the work email and password your organisation registered with the association.</p>
                     <form class="mt-6 flex flex-col gap-4" novalidate @submit.prevent="submitPassword">
-                        <Field id="phone" v-model="form.phone" label="Phone number" type="tel" inputmode="tel" autocomplete="username" placeholder="077 000 0000" required :error="errors.phone" />
+                        <Field id="email" v-model="form.email" label="Work email" type="email" autocomplete="username" placeholder="name@company.co.zw" required :error="errors.email" />
                         <Field id="password" v-model="form.password" label="Password" type="password" autocomplete="current-password" required :error="errors.password" />
                         <p v-if="errors.general" class="error" role="alert">{{ errors.general }}</p>
-                        <button type="submit" class="btn btn-gold mt-2 w-full" :disabled="busy || !form.phone || !form.password">
+                        <button type="submit" class="btn btn-gold mt-2 w-full" :disabled="busy || !form.email.includes('@') || !form.password">
                             <LogIn class="size-4" aria-hidden="true" /> {{ busy ? 'Checking' : 'Continue' }}
                         </button>
                     </form>
@@ -108,7 +108,7 @@ function restart() {
                 <template v-else>
                     <p class="eyebrow text-gold-600">Step 2 of 2</p>
                     <h1 class="mt-1 font-serif text-3xl font-bold text-forest-900">Enter your code</h1>
-                    <p class="mt-1 text-sm text-muted">We sent a 6-digit code by SMS<template v-if="masked"> to {{ masked }}</template>. It expires in a few minutes.</p>
+                    <p class="mt-1 text-sm text-muted">We emailed a 6-digit code<template v-if="masked"> to {{ masked }}</template>. It expires in a few minutes. Check spam if it is not there in a minute.</p>
                     <div v-if="devCode" class="mt-4 flex items-center gap-2 rounded-[8px] border border-dashed border-gold-500 bg-gold-100 px-3 py-2 text-sm text-gold-700" role="note">
                         <KeyRound class="size-4 shrink-0" aria-hidden="true" />
                         <span>Local test code: <strong class="font-mono tracking-widest">{{ devCode }}</strong></span>

@@ -50,7 +50,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function partnerUser(string $slug): User
     {
-        $u = User::create(['name' => 'Staff '.$slug, 'phone' => '+26378'.random_int(1000000, 9999999), 'password' => 'Secret-pass-123', 'phone_verified_at' => now()]);
+        $u = User::create(['name' => 'Staff '.$slug, 'phone' => '+26378'.random_int(1000000, 9999999), 'email' => 'staff-'.$slug.'-'.random_int(1000, 9999).'@example.test', 'password' => 'Secret-pass-123', 'phone_verified_at' => now()]);
         $u->assignRole('partner_user');
         Partner::where('slug', $slug)->first()->users()->attach($u->id, ['role' => 'admin']);
 

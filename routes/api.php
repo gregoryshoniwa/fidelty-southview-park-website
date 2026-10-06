@@ -83,7 +83,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
 // ---------- Partner portal ----------
 Route::prefix('partner')->group(function () {
-    Route::post('/auth/password', [Partner\AuthController::class, 'password'])->middleware('throttle:otp');
+    Route::post('/auth/password', [Partner\AuthController::class, 'password'])->middleware('throttle:partner-login');
     Route::post('/auth/otp', [Partner\AuthController::class, 'otp'])->middleware('throttle:20,1');
 
     Route::middleware(['auth:sanctum', 'throttle:api', 'partner'])->group(function () {

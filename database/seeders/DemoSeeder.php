@@ -26,8 +26,9 @@ class DemoSeeder extends Seeder
         $treasurer = User::firstOrCreate(['phone' => '+263770000002'], ['name' => 'Demo Treasurer', 'email' => 'treasurer@example.test', 'password' => 'ChangeMe!2026', 'phone_verified_at' => now()]);
         $treasurer->syncRoles(['committee', 'finance_admin']);
 
-        foreach (['marufu-attorneys' => '+263770000010', 'tn-cybertech-bank' => '+263770000011', 'fidelity-life' => '+263770000012'] as $slug => $phone) {
+        foreach (['marufu-attorneys' => ['+263770000010', 'marufu@example.test'], 'tn-cybertech-bank' => ['+263770000011', 'bank@example.test'], 'fidelity-life' => ['+263770000012', 'fidelity@example.test']] as $slug => [$phone, $email]) {
             $u = User::firstOrCreate(['phone' => $phone], ['name' => 'Demo '.Partner::where('slug', $slug)->value('name'), 'password' => 'Partner!2026', 'phone_verified_at' => now()]);
+            $u->forceFill(['email' => $email, 'email_verified_at' => $u->email_verified_at ?? now()])->save();
             $u->syncRoles(['partner_user']);
             Partner::where('slug', $slug)->first()->users()->syncWithoutDetaching([$u->id => ['role' => 'admin']]);
         }

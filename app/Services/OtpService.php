@@ -12,6 +12,22 @@ class OtpService
 
     public function issue(string $phone, string $purpose = 'login', ?string $sendTo = null): OtpCode
     {
+        [$otp, $code] = $this->create($phone, $purpose);
+
+        $label = $purpose === 'verify' ? 'stand verification' : 'sign-in';
+        $this->sms->send($sendTo ?? $phone, "Your Southview Park {$label} code is {$code}. It expires in ".config('fspra.otp.ttl_minutes').' minutes. Never share it.', 'otp', true);
+
+        return $otp;
+    }
+
+    /**
+     * Create a code without sending it (the caller delivers it, e.g. by email).
+     * $phone is the code's key (max 20 chars): a phone number, or "p<user id>" for emailed codes.
+     *
+     * @return array{0: OtpCode, 1: string}
+     */
+    public function create(string $phone, string $purpose): array
+    {
         OtpCode::where('phone', $phone)->where('purpose', $purpose)->whereNull('consumed_at')->update(['consumed_at' => now()]);
         $code = str_pad((string) random_int(0, 10 ** config('fspra.otp.length') - 1), config('fspra.otp.length'), '0', STR_PAD_LEFT);
 
@@ -23,14 +39,11 @@ class OtpService
             'ip' => request()?->ip(),
         ]);
 
-        $label = $purpose === 'verify' ? 'stand verification' : 'sign-in';
-        $this->sms->send($sendTo ?? $phone, "Your Southview Park {$label} code is {$code}. It expires in ".config('fspra.otp.ttl_minutes').' minutes. Never share it.', 'otp', true);
-
         if (app()->environment('local', 'testing')) {
             cache()->put("otp:last:$phone:$purpose", $code, 600);
         }
 
-        return $otp;
+        return [$otp, $code];
     }
 
     public function verify(string $phone, string $code, string $purpose = 'login', bool $consume = true): void

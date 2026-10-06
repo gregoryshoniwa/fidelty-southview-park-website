@@ -5,14 +5,17 @@ namespace App\Providers;
 use App\Integrations\Fidelity\FakeFidelityClient;
 use App\Integrations\Fidelity\FidelityClient;
 use App\Integrations\Fidelity\HttpFidelityClient;
+use App\Integrations\Fidelity\ManualFidelityClient;
 use App\Integrations\Sms\HttpSmsGateway;
 use App\Integrations\Sms\LogSmsGateway;
 use App\Integrations\Sms\SmsGateway;
 use App\Integrations\Tncb\FakeGateway;
 use App\Integrations\Tncb\HttpGateway;
 use App\Integrations\Tncb\PaymentGateway;
+use App\Services\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -25,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->instance('csp-nonce', '');
         $this->app->bind(FidelityClient::class, fn () => match (config('fspra.fidelity.driver')) {
             'http' => new HttpFidelityClient,
-            'manual' => new \App\Integrations\Fidelity\ManualFidelityClient,
+            'manual' => new ManualFidelityClient,
             default => new FakeFidelityClient,
         });
         $this->app->bind(PaymentGateway::class, fn () => config('fspra.tncb.driver') === 'http' ? new HttpGateway : new FakeGateway);
@@ -35,8 +38,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // `composer dev` runs: web server, queue worker, logs, Vite, and the scheduler below.
-        if ($this->app->runningInConsole() && class_exists(\Illuminate\Foundation\DevCommands::class)) {
-            \Illuminate\Foundation\DevCommands::artisan('schedule:work', 'scheduler');
+        if ($this->app->runningInConsole() && class_exists(DevCommands::class)) {
+            DevCommands::artisan('schedule:work', 'scheduler');
         }
 
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
@@ -52,11 +55,12 @@ class AppServiceProvider extends ServiceProvider
         }
 
         RateLimiter::for('otp', fn (Request $r) => [
-            Limit::perHour(5)->by('otp-phone:'.(\App\Services\Phone::normalise((string) $r->input('phone')) ?? 'invalid')),
-            Limit::perDay(10)->by('otp-phone-day:'.(\App\Services\Phone::normalise((string) $r->input('phone')) ?? 'invalid')),
+            Limit::perHour(5)->by('otp-phone:'.(Phone::normalise((string) $r->input('phone')) ?? 'invalid')),
+            Limit::perDay(10)->by('otp-phone-day:'.(Phone::normalise((string) $r->input('phone')) ?? 'invalid')),
             Limit::perHour(20)->by('otp-ip:'.$r->ip()),
         ]);
         RateLimiter::for('email-link', fn (Request $r) => [Limit::perHour(5)->by('email:'.strtolower((string) $r->input('email'))), Limit::perDay(30)->by('email-ip:'.$r->ip())]);
+        RateLimiter::for('partner-login', fn (Request $r) => [Limit::perHour(10)->by('pl:'.strtolower((string) $r->input('email'))), Limit::perHour(30)->by('pl-ip:'.$r->ip())]);
         RateLimiter::for('api', fn (Request $r) => Limit::perMinute(90)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('payments', fn (Request $r) => Limit::perMinute(10)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('assistant', fn (Request $r) => [Limit::perMinute(12)->by($r->user()?->id ?: $r->ip()), Limit::perDay(200)->by($r->ip())]);

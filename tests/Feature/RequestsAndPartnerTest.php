@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\LoginCodeMail;
 use App\Models\InAppNotification;
 use App\Models\ServiceRequest;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -56,13 +59,30 @@ class RequestsAndPartnerTest extends TestCase
 
     public function test_partner_two_factor_login(): void
     {
+        Mail::fake();
         $staff = $this->partnerUser('marufu-attorneys');
-        $this->postJson('/api/partner/auth/password', ['phone' => $staff->phone, 'password' => 'wrong-password'])->assertStatus(422);
-        $this->postJson('/api/partner/auth/password', ['phone' => $staff->phone, 'password' => 'Secret-pass-123'])->assertOk()->assertJson(['otp_sent' => true]);
+        $this->postJson('/api/partner/auth/password', ['email' => $staff->email, 'password' => 'wrong-password'])->assertStatus(422)->assertJsonValidationErrors('email');
+        Mail::assertNothingSent();
+        $this->postJson('/api/partner/auth/password', ['email' => strtoupper($staff->email), 'password' => 'Secret-pass-123'])->assertOk()->assertJson(['otp_sent' => true]);
         $this->assertGuest();
-        $code = cache('otp:last:'.$staff->phone.':partner_2fa');
+
+        $code = null;
+        Mail::assertSent(LoginCodeMail::class, function ($m) use ($staff, &$code) {
+            $code = $m->code;
+
+            return $m->hasTo($staff->email);
+        });
+        $this->postJson('/api/partner/auth/otp', ['code' => $code === '000000' ? '111111' : '000000'])->assertStatus(422);
         $this->postJson('/api/partner/auth/otp', ['code' => $code])->assertOk();
         $this->assertAuthenticatedAs($staff);
+    }
+
+    public function test_residents_cannot_use_the_partner_sign_in(): void
+    {
+        Mail::fake();
+        $u = User::create(['name' => 'Resident', 'email' => 'res@example.test', 'password' => 'Secret-pass-123']);
+        $this->postJson('/api/partner/auth/password', ['email' => 'res@example.test', 'password' => 'Secret-pass-123'])->assertStatus(422);
+        Mail::assertNothingSent();
     }
 
     public function test_partner_sees_only_its_own_queue_and_updates_notify_resident(): void

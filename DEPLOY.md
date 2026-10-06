@@ -44,6 +44,7 @@ Use cPanel > Terminal (or SSH). If Terminal is disabled, ask the host to enable 
 
 - **SMS provider**: set `SMS_DRIVER=http` with your Econet/NetOne bulk SMS account. Without it nobody can receive sign-in codes. `SMS_DAILY_CAP` stops SMS-pumping fraud.
 - **Committee sign-in**: committee members sign in at `/admin` with email, password and an authenticator app (two-factor is mandatory; they are asked to set it up on first sign-in). Committee and partner phone numbers cannot use the resident SMS sign-in.
+- **Partner sign-in**: partner staff sign in at `/partner` with their work email and password, then a 6-digit code emailed from info@. Create them in Admin > Partners > (partner) > Users; a work email is required.
 - **Stand verification**: `FIDELITY_DRIVER=manual` until Fidelity Life's API is connected. Residents submit ID and stand; the committee checks Fidelity's records and clicks **Confirm stand** in Admin > Community > Residents.
 - **Payments**: keep `PAYMENTS_LIVE=false`. When the bank is ready set `TNCB_DRIVER=http`, a random `TNCB_WEBHOOK_SECRET` of at least 32 characters, then `PAYMENTS_LIVE=true`. Webhooks are verified by HMAC and then confirmed with the bank before anything is released.
 - **Proxies**: leave `TRUSTED_PROXIES` empty unless you put Cloudflare in front (then list Cloudflare's IP ranges).

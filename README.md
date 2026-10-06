@@ -40,12 +40,12 @@ These exist only on a local copy seeded with `php artisan migrate:fresh --seed`.
 | --- | --- | --- |
 | Committee admin, `/admin` (full access) | `admin@example.test` | `ChangeMe!2026` |
 | Committee admin, `/admin` (finance only) | `treasurer@example.test` | `ChangeMe!2026` |
-| Partner portal, `/partner` (Marufu Attorneys) | phone `0770000010` | `Partner!2026` |
-| Partner portal, `/partner` (TN CyberTech Bank) | phone `0770000011` | `Partner!2026` |
-| Partner portal, `/partner` (Fidelity Life) | phone `0770000012` | `Partner!2026` |
+| Partner portal, `/partner` (Marufu Attorneys) | `marufu@example.test` | `Partner!2026` |
+| Partner portal, `/partner` (TN CyberTech Bank) | `bank@example.test` | `Partner!2026` |
+| Partner portal, `/partner` (Fidelity Life) | `fidelity@example.test` | `Partner!2026` |
 | Resident app, `/app` | Google, email link, or WhatsApp once set up | none (no passwords) |
 
-- **Partner SMS codes:** shown on screen locally because no real SMS is sent.
+- **Partner sign-in codes:** emailed from info@ in production. Locally the demo accounts (`.test` addresses) get no email; the code is shown on screen.
 - **Demo resident:** `0771234567` is already verified on stand 1001. To sign in as them, set test `WHATSAPP_*` values, press **Continue with WhatsApp**, then run `php artisan fspra:whatsapp-test <code> 0771234567`.
 - **Admin two-factor:** the first admin sign-in shows a QR code. Scan it with Google Authenticator or Microsoft Authenticator, enter the 6-digit code, and keep the recovery codes.
 - **Verifying a stand:** with `FIDELITY_DRIVER=manual` (as live) any stand goes to the committee; confirm it in Admin > Community > Residents. With `fake`, stands 1001 to 1200 match instantly.

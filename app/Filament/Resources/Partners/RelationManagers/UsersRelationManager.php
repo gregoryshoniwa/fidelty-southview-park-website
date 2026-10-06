@@ -54,14 +54,14 @@ class UsersRelationManager extends RelationManager
                     ->label('Create partner user')
                     ->icon(Heroicon::OutlinedUserPlus)
                     ->modalHeading('Create a partner user')
-                    ->modalDescription('The user signs in to the partner portal with this phone number and password.')
+                    ->modalDescription('The user signs in to the partner portal with this work email and password, then a code sent to that email.')
                     ->schema([
                         TextInput::make('name')->required()->maxLength(255),
-                        TextInput::make('phone')->label('Phone (E.164)')->required()->tel()->placeholder('+2637XXXXXXXX')
+                        TextInput::make('email')->label('Work email')->email()->required()->maxLength(255)->unique(User::class, 'email'),
+                        TextInput::make('phone')->label('Phone (E.164, for contact)')->tel()->placeholder('+2637XXXXXXXX')
                             ->regex('/^\+263[1-9]\d{7,9}$/')
                             ->validationMessages(['regex' => 'Use the international format, e.g. +263771234567.'])
                             ->unique(User::class, 'phone'),
-                        TextInput::make('email')->email()->maxLength(255)->unique(User::class, 'email'),
                         TextInput::make('password')->password()->revealable()->required()->minLength(12),
                         Select::make('role')->label('Partner role')->options(self::ROLES)->default('agent')->required(),
                     ])
@@ -71,10 +71,11 @@ class UsersRelationManager extends RelationManager
                         $user = DB::transaction(function () use ($data, $partner) {
                             $user = User::create([
                                 'name' => $data['name'],
-                                'phone' => $data['phone'],
-                                'email' => $data['email'] ?: null,
+                                'phone' => $data['phone'] ?: null,
+                                'email' => strtolower($data['email']),
+                                'email_verified_at' => now(),
                                 'password' => $data['password'],
-                                'phone_verified_at' => now(),
+                                'phone_verified_at' => $data['phone'] ? now() : null,
                                 'status' => 'active',
                             ]);
                             $user->assignRole('partner_user');
