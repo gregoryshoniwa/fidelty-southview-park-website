@@ -13,6 +13,8 @@ class CommunityPage extends Model
 
     public const TYPES = ['business' => 'Business', 'church' => 'Church', 'school' => 'School'];
 
+    public const PLURALS = ['business' => 'Businesses', 'church' => 'Churches', 'school' => 'Schools'];
+
     protected function casts(): array
     {
         return ['hours' => 'array', 'verified' => 'boolean', 'active' => 'boolean'];

@@ -95,7 +95,7 @@ class SiteController extends Controller
         }
 
         return view('site.community', ['pages' => $q->orderByDesc('verified')->orderBy('name')->paginate(18)->withQueryString(), 'type' => $type,
-            'tiles' => Sponsorship::live('sponsored_tile')->take(2)->get()]);
+            'tiles' => Sponsorship::live('sponsored_tile')->where('advertiser', '!=', 'Southview Park Residents Association')->take(2)->get()]);
     }
 
     public function page(CommunityPage $page)

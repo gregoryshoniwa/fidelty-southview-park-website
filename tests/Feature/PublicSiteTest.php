@@ -16,7 +16,7 @@ class PublicSiteTest extends TestCase
     public static function pages(): array
     {
         return [['/'], ['/services'], ['/services/title-deed-tracker'], ['/services/pay-bills'], ['/notices'], ['/community'],
-            ['/community/tariro-primary-school'], ['/about'], ['/faq'], ['/advertise'], ['/fees'], ['/privacy'], ['/terms'],
+            ['/about'], ['/faq'], ['/advertise'], ['/fees'], ['/privacy'], ['/terms'],
             ['/complaints'], ['/constitution'], ['/app'], ['/app/login'], ['/partner/login']];
     }
 
@@ -40,7 +40,7 @@ class PublicSiteTest extends TestCase
         $this->assertStringContainsString('og:image', $html);
         $this->assertMatchesRegularExpression('/<h1[^>]*>/', $html);
         $this->assertSame(1, preg_match_all('/<h1[\s>]/', $html), 'exactly one h1');
-        $this->assertStringContainsString('Marufu Attorneys', $html);
+        $this->assertStringContainsString('Fidelity Life', $html);
     }
 
     public function test_pay_bills_shows_coming_soon(): void
@@ -48,9 +48,16 @@ class PublicSiteTest extends TestCase
         $this->get('/services/pay-bills')->assertSee('Coming soon');
     }
 
-    public function test_schools_are_listings_not_partners(): void
+    public function test_community_listing_page_says_it_is_not_a_partner(): void
     {
-        $this->get('/community/tariro-primary-school')->assertSee('not yet a partner');
+        \App\Models\CommunityPage::create(['type' => 'school', 'name' => 'Test School', 'slug' => 'test-school', 'tagline' => 'A school', 'address' => 'Harare', 'verified' => false, 'active' => true]);
+        $this->get('/community/test-school')->assertOk()->assertSee('not yet a partner');
+    }
+
+    public function test_community_shows_an_invitation_card_for_each_section(): void
+    {
+        $this->get('/community')->assertOk()->assertSee('Your business here')->assertSee('Your church here')->assertSee('Your school here')->assertSee('Schools')->assertDontSee('Schooles');
+        $this->get('/community?type=church')->assertSee('Your church here')->assertDontSee('Your school here');
     }
 
     public function test_sitemap_and_robots(): void

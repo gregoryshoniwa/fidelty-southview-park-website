@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([RoleSeeder::class, PartnerSeeder::class, ServiceSeeder::class, ContentSeeder::class, CommunitySeeder::class]);
+        $this->call([RoleSeeder::class, PartnerSeeder::class, ServiceSeeder::class, ContentSeeder::class]);
 
         if (app()->environment('local', 'testing')) {
             $this->call(DemoSeeder::class);

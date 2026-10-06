@@ -34,6 +34,7 @@ class CommunityAndAccountTest extends TestCase
     public function test_follow_community_page(): void
     {
         $u = $this->resident('1142');
+        \App\Models\CommunityPage::create(['type' => 'school', 'name' => 'Test School', 'slug' => 'tariro-primary-school', 'tagline' => 'A school', 'address' => 'Harare', 'verified' => false, 'active' => true]);
         $this->actingAs($u)->postJson('/api/pages/tariro-primary-school/follow')->assertOk()->assertJson(['following' => true]);
         $this->actingAs($u)->getJson('/api/pages/tariro-primary-school')->assertJsonPath('data.following', true);
     }
