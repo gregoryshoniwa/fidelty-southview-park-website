@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\GoogleAuthController;
 use App\Http\Controllers\Web\SiteController;
 use App\Http\Controllers\Web\SpaController;
 use App\Http\Controllers\Web\WebhookController;
+use App\Http\Controllers\Web\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(SiteController::class)->group(function () {
@@ -36,6 +37,8 @@ Route::controller(SiteController::class)->group(function () {
 Route::get('/go/ad/{sponsorship}', [AdController::class, 'click'])->name('ad.click');
 Route::post('/api/ads/impressions', [AdController::class, 'impressions'])->middleware('throttle:60,1');
 
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->middleware('throttle:30,1');
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->middleware('throttle:300,1');
 Route::post('/webhooks/tncb', [WebhookController::class, 'tncb'])->middleware('throttle:120,1')->name('webhooks.tncb');
 
 if (config('fspra.tncb.driver') === 'fake' && ! app()->isProduction()) {

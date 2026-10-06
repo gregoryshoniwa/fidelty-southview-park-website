@@ -129,6 +129,25 @@ A domain may have only one SPF record, so merge Firebase into the existing one r
 
 The website is served through Cloudflare's proxy, so `.env` must set `TRUSTED_PROXIES` to Cloudflare's ranges (already filled in `.env.example`). Without it every visitor looks like a Cloudflare IP and rate limits would block real residents together. Set Cloudflare SSL/TLS mode to **Full (strict)** once AutoSSL has issued the cPanel certificate.
 
+### Phone numbers without paid SMS (`AUTH_PHONE_PROVIDER=none`)
+
+With `none`, no SMS is sent. Residents prove their number on WhatsApp, or type it and the committee confirms it.
+
+**Committee confirmation (always available):** a typed number shows as "(unconfirmed)" in Admin > Community > Residents. Click **Confirm phone** after checking it (call it, or match Fidelity Life's records). **Confirm stand** also confirms the number. Unconfirmed numbers are never used to sign in or to send messages.
+
+**WhatsApp verification (free):** the resident sends `VERIFY 123456` from their WhatsApp to the association's number; Meta tells the site which number sent it. Receiving messages is free on the WhatsApp Cloud API.
+
+1. https://developers.facebook.com > **My Apps > Create app**, use case **Connect with customers through WhatsApp**, and create (or pick) a free business portfolio called "Fidelity Southview Park Residents Association".
+2. **WhatsApp > API Setup > Add phone number**: enter the association's line and confirm it by SMS or voice call. Display name: "Fidelity Southview Park Residents Association" (Meta reviews it).
+   A number on the Cloud API cannot normally stay in the ordinary WhatsApp app. If the line is in the **WhatsApp Business app**, Meta may offer to keep both running ("coexistence"); otherwise remove WhatsApp from that phone first, after backing up chats.
+3. **WhatsApp > Configuration > Webhook**: Callback URL `https://fidelity-southview.co.zw/webhooks/whatsapp`, Verify token = any long random text (also put it in `WHATSAPP_VERIFY_TOKEN`). Click **Verify and save**, then **Manage > subscribe to `messages`**. The site must be live for this step.
+4. **App settings > Basic**: copy **App secret** into `WHATSAPP_APP_SECRET`; add the privacy URL `https://fidelity-southview.co.zw/privacy`; switch the app to **Live**.
+5. `.env`: `WHATSAPP_NUMBER=2637XXXXXXXX` (the line, digits only), then `php artisan optimize`. The **Continue with WhatsApp** and **Verify with WhatsApp** buttons appear.
+6. Optional thank-you reply ("Your number is confirmed"): **Business settings > System users**, create one, generate a permanent token with `whatsapp_business_messaging`, and set `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` (shown under API Setup). Replies to a message the resident sent are free.
+
+**Testing on your computer** (Meta cannot reach localhost): set the three `WHATSAPP_*` values to anything, press **Get my code**, then run
+`php artisan fspra:whatsapp-test 123456 0771234567` with the code shown. The page continues by itself.
+
 ## 10. Updating
 
 Build a new zip, upload, extract over `~/fspra` (your `.env` and `storage/` are not in the zip), then:

@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Residents;
 use App\Filament\Resources\Residents\Pages\ListResidents;
 use App\Models\AuditLog;
 use App\Models\Resident;
+use App\Models\User;
+use App\Services\NotificationService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -57,21 +59,40 @@ class ResidentResource extends Resource
         return str_repeat('•', max(0, strlen($phone) - 3)).substr($phone, -3);
     }
 
+    /** Move a typed (unconfirmed) number to the confirmed phone, unless another account already holds it. */
+    public static function confirmPhoneFor(?User $user): bool
+    {
+        $phone = $user?->unconfirmed_phone;
+        if (! $phone || $user->phone) {
+            return true;
+        }
+        if (User::where('phone', $phone)->where('id', '!=', $user->id)->exists()) {
+            return false;
+        }
+        $user->forceFill(['phone' => $phone, 'phone_verified_at' => now(), 'unconfirmed_phone' => null])->save();
+        AuditLog::record('user.phone_confirmed_by_committee', $user);
+
+        return true;
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             // Select only what the list needs: never national_id_hash or fidelity_reference.
             ->modifyQueryUsing(fn (Builder $query) => $query
                 ->select(['residents.id', 'residents.user_id', 'residents.stand_id', 'residents.verification_status', 'residents.verified_at', 'residents.created_at'])
-                ->with(['user:id,name,phone,status', 'stand:id,stand_number']))
+                ->with(['user:id,name,phone,unconfirmed_phone,status', 'stand:id,stand_number']))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('user.name')->label('Name')->searchable(),
-                TextColumn::make('phone')->label('Phone')->state(fn (Resident $r) => self::maskPhone($r->user?->phone))->fontFamily('mono'),
+                TextColumn::make('phone')->label('Phone')->fontFamily('mono')
+                    ->state(fn (Resident $r) => $r->user?->phone ? self::maskPhone($r->user->phone) : ($r->user?->unconfirmed_phone ? self::maskPhone($r->user->unconfirmed_phone).' (unconfirmed)' : '-')),
                 TextColumn::make('stand.stand_number')->label('Stand')->searchable()->placeholder('-'),
                 TextColumn::make('verification_status')->label('Verification')->badge()
                     ->formatStateUsing(fn ($s) => self::VERIFICATION[$s] ?? $s)
-                    ->color(fn ($s) => match ($s) { 'verified' => 'success', 'pending', 'review' => 'warning', default => 'gray' }),
+                    ->color(fn ($s) => match ($s) {
+                        'verified' => 'success', 'pending', 'review' => 'warning', default => 'gray'
+                    }),
                 TextColumn::make('verified_at')->dateTime('j M Y')->sortable()->placeholder('-'),
                 TextColumn::make('user.status')->label('Account')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
                 TextColumn::make('created_at')->label('Registered')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
@@ -83,6 +104,21 @@ class ResidentResource extends Resource
                     ->query(fn (Builder $query, array $data) => filled($data['value']) ? $query->whereHas('user', fn ($u) => $u->where('status', $data['value'])) : $query),
             ])
             ->recordActions([
+                Action::make('confirmPhone')
+                    ->label('Confirm phone')
+                    ->icon(Heroicon::OutlinedDevicePhoneMobile)
+                    ->color('warning')
+                    ->visible(fn (Resident $record) => $record->user?->unconfirmed_phone && ! $record->user->phone)
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Resident $record) => 'Confirm only after you have checked that '.$record->user->unconfirmed_phone.' belongs to '.$record->user->name.', for example by calling it or matching Fidelity Life records.')
+                    ->action(function (Resident $record) {
+                        if (! self::confirmPhoneFor($record->user)) {
+                            Notification::make()->title('This number is already linked to another account')->danger()->send();
+
+                            return;
+                        }
+                        Notification::make()->title('Phone number confirmed')->success()->send();
+                    }),
                 Action::make('confirmStand')
                     ->label('Confirm stand')
                     ->icon(Heroicon::OutlinedCheckBadge)
@@ -98,9 +134,10 @@ class ResidentResource extends Resource
                             return;
                         }
                         $record->update(['verification_status' => 'verified', 'verified_at' => now()]);
+                        self::confirmPhoneFor($record->user); // the committee has checked Fidelity's records, which hold the owner's number
                         $record->user->assignRole('verified_resident');
                         AuditLog::record('verification.confirmed_by_committee', $record);
-                        app(\App\Services\NotificationService::class)->notify($record->user, 'Your stand is verified', 'Stand '.$record->stand?->stand_number.' is linked to your account. Every service is now open to you.', '/app', 'verification');
+                        app(NotificationService::class)->notify($record->user, 'Your stand is verified', 'Stand '.$record->stand?->stand_number.' is linked to your account. Every service is now open to you.', '/app', 'verification');
                         Notification::make()->title('Stand confirmed and resident notified')->success()->send();
                     }),
                 Action::make('rejectStand')
@@ -112,7 +149,7 @@ class ResidentResource extends Resource
                     ->action(function (Resident $record) {
                         $record->update(['verification_status' => 'unverified', 'stand_id' => null]);
                         AuditLog::record('verification.rejected_by_committee', $record);
-                        app(\App\Services\NotificationService::class)->notify($record->user, 'We could not confirm your stand', 'Fidelity Life records did not match. Write to the committee from the app and we will help.', '/app/inbox/new', 'verification');
+                        app(NotificationService::class)->notify($record->user, 'We could not confirm your stand', 'Fidelity Life records did not match. Write to the committee from the app and we will help.', '/app/inbox/new', 'verification');
                         Notification::make()->title('Rejected and resident notified')->success()->send();
                     }),
                 ActionGroup::make([

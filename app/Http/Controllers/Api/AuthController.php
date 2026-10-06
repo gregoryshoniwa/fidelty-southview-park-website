@@ -9,6 +9,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\OtpService;
 use App\Services\Phone;
+use App\Services\WhatsAppVerification;
 use App\Support\Present;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,7 +79,12 @@ class AuthController extends Controller
             'firebase' => $enabled ? ['apiKey' => $f['api_key'], 'authDomain' => $f['auth_domain'] ?: $f['project_id'].'.firebaseapp.com', 'projectId' => $f['project_id'], 'appId' => $f['app_id']] : null,
             'providers' => array_values(array_filter([GoogleAuthController::enabled() ? 'google' : null, 'email'])),
             'email_via' => 'association',
-            'phone_provider' => $enabled && config('fspra.phone_provider') === 'firebase' ? 'firebase' : 'local',
+            'phone_provider' => match (true) {
+                $enabled && config('fspra.phone_provider') === 'firebase' => 'firebase',
+                config('fspra.phone_provider') === 'none' => 'none',
+                default => 'local',
+            },
+            'whatsapp' => WhatsAppVerification::enabled(),
         ]);
     }
 

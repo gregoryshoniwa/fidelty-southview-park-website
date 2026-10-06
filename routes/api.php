@@ -13,6 +13,9 @@ Route::post('/auth/email', [Api\EmailLoginController::class, 'request'])->middle
 Route::post('/auth/email/verify', [Api\EmailLoginController::class, 'verify'])->middleware('throttle:20,1');
 Route::get('/auth/google/pending', [GoogleAuthController::class, 'pending']);
 Route::post('/auth/google/complete', [GoogleAuthController::class, 'complete'])->middleware('throttle:20,1');
+Route::post('/auth/whatsapp', [Api\PhoneVerifyController::class, 'startLogin'])->middleware('throttle:10,10');
+Route::post('/auth/whatsapp/complete', [Api\PhoneVerifyController::class, 'complete'])->middleware('throttle:20,1');
+Route::get('/phone/whatsapp/{id}', [Api\PhoneVerifyController::class, 'status'])->middleware('throttle:90,1');
 Route::post('/auth/firebase', [Api\AuthController::class, 'firebase'])->middleware('throttle:20,1');
 Route::get('/assistant/config', [Api\AssistantController::class, 'config']);
 Route::post('/assistant/chat', [Api\AssistantController::class, 'chat'])->middleware('throttle:assistant');
@@ -27,6 +30,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::patch('/me', [Api\AccountController::class, 'update']);
     Route::post('/me/phone/otp', [Api\AuthController::class, 'linkPhoneOtp'])->middleware('throttle:otp');
     Route::post('/me/phone', [Api\AuthController::class, 'linkPhone'])->middleware('throttle:20,60');
+    Route::post('/me/phone/whatsapp', [Api\PhoneVerifyController::class, 'startLink'])->middleware('throttle:10,10');
+    Route::post('/me/phone/unconfirmed', [Api\PhoneVerifyController::class, 'unconfirmed'])->middleware('throttle:10,10');
     Route::get('/me/export', [Api\AccountController::class, 'export']);
     Route::post('/me/delete-request', [Api\AccountController::class, 'requestDeletion']);
     Route::post('/assistant/escalate', [Api\AssistantController::class, 'escalate']);

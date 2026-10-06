@@ -11,6 +11,7 @@ use App\Services\AssistantService;
 use App\Services\LedgerService;
 use App\Services\Phone;
 use App\Services\SmsService;
+use App\Services\WhatsAppVerification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
@@ -60,3 +61,14 @@ Schedule::call(fn () => app(AssistantService::class)->rebuildKnowledge())->daily
 Schedule::call(fn () => OtpCode::where('created_at', '<', now()->subDays(2))->delete())->daily();
 Schedule::call(fn () => AssistantConversation::where('created_at', '<', now()->subDays(90))->delete())->daily();
 Schedule::command('auth:clear-resets')->daily();
+
+// Local testing without Meta: pretend a WhatsApp "VERIFY <code>" message arrived from <phone>.
+Artisan::command('fspra:whatsapp-test {code} {phone}', function (string $code, string $phone) {
+    if (app()->environment('production')) {
+        $this->error('Not available in production.');
+
+        return 1;
+    }
+    $c = app(WhatsAppVerification::class)->receive(ltrim((string) Phone::normalise($phone), '+'), 'VERIFY '.$code);
+    $c ? $this->info("Code {$code} confirmed for {$c->phone}. The page will continue by itself.") : $this->error('No waiting code matches (wrong or expired code, or not a Zimbabwean number).');
+})->purpose('Simulate an incoming WhatsApp verification message (local testing)');

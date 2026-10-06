@@ -31,6 +31,12 @@
         <env name="TNCB_DRIVER" value="fake"/>
         <env name="FIDELITY_DRIVER" value="fake"/>
         <env name="SMS_DRIVER" value="log"/>
+        <env name="AUTH_PHONE_PROVIDER" value="local"/>
+        <env name="GOOGLE_CLIENT_ID" value=""/>
+        <env name="GOOGLE_CLIENT_SECRET" value=""/>
+        <env name="WHATSAPP_NUMBER" value=""/>
+        <env name="WHATSAPP_APP_SECRET" value=""/>
+        <env name="WHATSAPP_VERIFY_TOKEN" value=""/>
         <env name="GEMINI_API_KEY" value=""/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>

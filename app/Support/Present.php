@@ -22,6 +22,7 @@ final class Present
             'name' => $u->name,
             'phone_masked' => $u->phone ? Phone::mask($u->phone) : null,
             'has_phone' => (bool) $u->phone,
+            'phone_pending_masked' => ! $u->phone && $u->unconfirmed_phone ? Phone::mask($u->unconfirmed_phone) : null,
             'auth_provider' => $u->auth_provider,
             'email' => $u->email,
             'locale' => $u->locale,

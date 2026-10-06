@@ -21,8 +21,17 @@ return [
         'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
         'app_id' => env('FIREBASE_APP_ID'),
     ],
-    // 'firebase' sends sign-in codes through Firebase; 'local' uses the SMS gateway in config('fspra.sms').
+    // 'firebase' sends sign-in codes through Firebase; 'local' uses the SMS gateway in config('fspra.sms');
+    // 'none' sends no SMS: numbers are proved on WhatsApp or confirmed by the committee.
     'phone_provider' => env('AUTH_PHONE_PROVIDER', 'local'),
+    // Free phone proof: residents send "VERIFY 123456" to this WhatsApp Cloud API number (incoming messages are free).
+    'whatsapp' => [
+        'number' => env('WHATSAPP_NUMBER'),                   // e.g. 263771234567
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),       // any long random text; also typed into Meta's webhook form
+        'app_secret' => env('WHATSAPP_APP_SECRET'),           // Meta app > App settings > Basic > App secret
+        'token' => env('WHATSAPP_TOKEN'),                     // optional: lets us reply "Thank you, confirmed"
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'), // optional, with the token
+    ],
     'consent_version' => '2026-10-01',
     'documents' => ['max_kb' => 8192, 'mimes' => ['pdf', 'jpg', 'jpeg', 'png', 'webp']],
 ];

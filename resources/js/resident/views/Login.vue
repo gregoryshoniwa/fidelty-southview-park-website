@@ -2,7 +2,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
-import { Phone, Mail, ArrowRight, ShieldCheck, MailCheck, Loader2 } from 'lucide-vue-next';
+import { Phone, Mail, ArrowRight, ShieldCheck, MailCheck, Loader2, MessageCircle } from 'lucide-vue-next';
+import WhatsAppProof from '../components/WhatsAppProof.vue';
 import { api } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
 import { useAuth } from '../store.js';
@@ -13,10 +14,11 @@ const cfg = ref({ providers: [], phone_provider: 'local' });
 const mode = ref('choose'); // choose | phone | code | email | email-sent | details | email-confirm
 const phone = ref(''); const code = ref(''); const email = ref(''); const name = ref(''); const accept = ref(false);
 const masked = ref(''); const devCode = ref(null); const busy = ref(''); const errors = ref({});
-let confirmation = null; let pendingToken = null; let emailToken = null; let googlePending = false;
+let confirmation = null; let pendingToken = null; let emailToken = null; let googlePending = false; let waPending = false;
 
 const hasGoogle = computed(() => cfg.value.providers.includes('google'));
 const hasEmail = computed(() => true);
+const hasSms = computed(() => cfg.value.phone_provider !== 'none');
 
 onMounted(async () => {
     cfg.value = await authConfig();
@@ -65,6 +67,13 @@ function google() {
     busy.value = 'google';
     const next = typeof route.query.next === 'string' ? '?next=' + encodeURIComponent(route.query.next) : '';
     window.location.href = '/auth/google' + next; // full-page trip to Google and back to /auth/google/callback
+}
+
+function waNeedsDetails() { waPending = true; mode.value = 'details'; }
+function waError(e) { toast.error(e.first?.('phone') || e.message || 'WhatsApp sign-in failed. Please try again.'); }
+async function waComplete() {
+    try { done((await api('/auth/whatsapp/complete', { method: 'POST', body: { name: name.value, accept_terms: accept.value } })).user); }
+    catch (e) { errors.value = e.errors || {}; if (e.errors?.name) toast.error(e.first('name')); }
 }
 
 async function googleComplete() {
@@ -121,7 +130,8 @@ async function codeSubmit() {
 async function detailsSubmit() {
     busy.value = 'details';
     try {
-        if (googlePending) await googleComplete();
+        if (waPending) await waComplete();
+        else if (googlePending) await googleComplete();
         else if (emailToken) await emailVerify();
         else if (pendingToken) await exchange(pendingToken);
         else await codeSubmit();
@@ -150,7 +160,8 @@ async function detailsSubmit() {
                             Continue with Google
                         </button>
                         <button v-if="hasEmail" type="button" class="btn btn-outline w-full" :disabled="!!busy" @click="mode = 'email'"><Mail class="size-4" />Continue with email</button>
-                        <button type="button" class="btn btn-gold w-full" :disabled="!!busy" @click="mode = 'phone'"><Phone class="size-4" />Continue with phone number</button>
+                        <button v-if="cfg.whatsapp" type="button" class="btn w-full bg-[#25D366] text-[#073b1f] hover:bg-[#1fb757]" :disabled="!!busy" @click="mode = 'whatsapp'"><MessageCircle class="size-4" />Continue with WhatsApp</button>
+                        <button v-if="hasSms" type="button" class="btn btn-gold w-full" :disabled="!!busy" @click="mode = 'phone'"><Phone class="size-4" />Continue with phone number</button>
                     </div>
                 </template>
 
@@ -161,6 +172,13 @@ async function detailsSubmit() {
                     <button id="phone-send" class="btn btn-gold w-full" :disabled="!!busy || phone.length < 9"><Loader2 v-if="busy" class="size-4 animate-spin" />Send me a code</button>
                     <button type="button" class="btn btn-quiet" @click="mode = 'choose'">Other ways to sign in</button>
                 </form>
+
+                <div v-else-if="mode === 'whatsapp'" class="flex flex-col gap-5">
+                    <h1 class="font-serif text-3xl font-bold text-forest-900">Sign in with WhatsApp</h1>
+                    <p class="-mt-3 text-muted">Send us one short WhatsApp message from your phone. It proves the number is yours. No SMS, no cost.</p>
+                    <WhatsAppProof start-path="/auth/whatsapp" label="Get my code" @done="(u) => done(u)" @needs-details="waNeedsDetails" @error="waError" />
+                    <button type="button" class="btn btn-quiet" @click="mode = 'choose'">Other ways to sign in</button>
+                </div>
 
                 <form v-else-if="mode === 'code'" class="flex flex-col gap-5" @submit.prevent="codeSubmit">
                     <h1 class="font-serif text-3xl font-bold text-forest-900">Enter your code</h1>
