@@ -6,20 +6,35 @@ import { Phone, Mail, ArrowRight, ShieldCheck, MailCheck, Loader2 } from 'lucide
 import { api } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
 import { useAuth } from '../store.js';
-import { authConfig, googleToken, sendPhoneCode, confirmPhoneCode, toE164, friendlyError } from '../firebase.js';
+import { authConfig, sendPhoneCode, confirmPhoneCode, toE164, friendlyError } from '../firebase.js';
 
 const router = useRouter(); const route = useRoute(); const auth = useAuth();
 const cfg = ref({ providers: [], phone_provider: 'local' });
 const mode = ref('choose'); // choose | phone | code | email | email-sent | details | email-confirm
 const phone = ref(''); const code = ref(''); const email = ref(''); const name = ref(''); const accept = ref(false);
 const masked = ref(''); const devCode = ref(null); const busy = ref(''); const errors = ref({});
-let confirmation = null; let pendingToken = null; let emailToken = null;
+let confirmation = null; let pendingToken = null; let emailToken = null; let googlePending = false;
 
 const hasGoogle = computed(() => cfg.value.providers.includes('google'));
 const hasEmail = computed(() => true);
 
 onMounted(async () => {
     cfg.value = await authConfig();
+    const g = route.query.google;
+    if (typeof g === 'string') {
+        router.replace({ query: { ...route.query, google: undefined } });
+        if (g === 'details') {
+            const p = await api('/auth/google/pending', { quiet: true }).catch(() => ({}));
+            if (p.pending) { googlePending = true; name.value = p.name || ''; mode.value = 'details'; }
+        } else {
+            toast.error({
+                cancelled: 'Google sign-in was cancelled.',
+                unverified: 'Google did not confirm an email address for that account.',
+                staff: 'Committee and partner accounts sign in through their own portals.',
+                suspended: 'This account is suspended. Write to the committee.',
+            }[g] || 'Google sign-in failed. Please try again.');
+        }
+    }
     if (route.name === 'login-email' && typeof route.query.token === 'string') {
         emailToken = route.query.token;
         router.replace({ name: 'login-email' }); // keep the one-time token out of history
@@ -28,9 +43,10 @@ onMounted(async () => {
     }
 });
 
-function done(user) {
+function done(user, serverNext) {
     auth.set(user);
-    const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') && !route.query.next.startsWith('//') ? route.query.next : (user.resident?.verification_status === 'verified' ? '/' : '/verify');
+    const asked = typeof route.query.next === 'string' && route.query.next.startsWith('/') && !route.query.next.startsWith('//') ? route.query.next : null;
+    const next = serverNext || asked || (user.resident?.verification_status === 'verified' ? '/' : '/verify');
     router.replace(next);
 }
 
@@ -45,9 +61,17 @@ async function exchange(token, suggested) {
     }
 }
 
-async function google() {
-    busy.value = 'google'; errors.value = {};
-    try { const r = await googleToken(); await exchange(r.token, r.name); } catch (e) { toast.error(friendlyError(e)); } finally { busy.value = ''; }
+function google() {
+    busy.value = 'google';
+    const next = typeof route.query.next === 'string' ? '?next=' + encodeURIComponent(route.query.next) : '';
+    window.location.href = '/auth/google' + next; // full-page trip to Google and back to /auth/google/callback
+}
+
+async function googleComplete() {
+    try {
+        const r = await api('/auth/google/complete', { method: 'POST', body: { name: name.value, accept_terms: accept.value } });
+        done(r.user, r.next);
+    } catch (e) { errors.value = e.errors || {}; if (!e.errors?.accept_terms) toast.error(e.first?.('name') || e.message); }
 }
 
 async function emailStart() {
@@ -97,7 +121,8 @@ async function codeSubmit() {
 async function detailsSubmit() {
     busy.value = 'details';
     try {
-        if (emailToken) await emailVerify();
+        if (googlePending) await googleComplete();
+        else if (emailToken) await emailVerify();
         else if (pendingToken) await exchange(pendingToken);
         else await codeSubmit();
     } finally { busy.value = ''; }

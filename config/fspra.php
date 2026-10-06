@@ -13,14 +13,13 @@ return [
         'api_key' => env('TNCB_API_KEY'), 'webhook_secret' => env('TNCB_WEBHOOK_SECRET')],
     'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'live_model' => env('GEMINI_LIVE_MODEL', 'gemini-live-2.5-flash-preview'),
         'text_model' => env('GEMINI_TEXT_MODEL', 'gemini-2.5-flash'), 'daily_token_cap' => (int) env('ASSISTANT_DAILY_TOKEN_CAP', 2000000), 'daily_live_sessions' => (int) env('ASSISTANT_DAILY_VOICE_SESSIONS', 150)],
-    // Firebase Authentication: Google and email sign-in are free (Spark plan, 50k monthly users).
+    // Firebase Authentication, used only for phone SMS codes (Google sign-in uses Socialite, see config/services.php).
     // Phone SMS needs the Blaze plan: US$0.09 per SMS to Zimbabwe, first 10 per day free.
     'firebase' => [
         'project_id' => env('FIREBASE_PROJECT_ID'),
         'api_key' => env('FIREBASE_API_KEY'),
         'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
         'app_id' => env('FIREBASE_APP_ID'),
-        'providers' => array_filter(explode(',', (string) env('FIREBASE_PROVIDERS', 'google'))),
     ],
     // 'firebase' sends sign-in codes through Firebase; 'local' uses the SMS gateway in config('fspra.sms').
     'phone_provider' => env('AUTH_PHONE_PROVIDER', 'local'),

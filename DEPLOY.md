@@ -82,38 +82,29 @@ This runs the queue (receipts, notifications), quiet-hour SMS, nightly ledger ch
 
 Run `php artisan optimize` after every `.env` change.
 
-## 9. Sign-in: Google and SMS via Firebase, email via your own mailbox
+## 9. Sign-in: Google directly, SMS via Firebase, email via your own mailbox
 
-1. Go to https://console.firebase.google.com, **Add project** "Southview Park" (Analytics off).
-2. **Build > Authentication > Get started**, then **Sign-in method**:
-   - Enable **Google** (choose a support email).
-   - Optional: enable **Phone**. This requires upgrading to the **Blaze** plan with a card. Zimbabwe SMS cost US$0.09 each; the first 10 per day are free. Set a budget alert in Google Cloud Billing.
-3. **Authentication > Settings > Authorized domains**: add `fidelity-southview.co.zw` (and `www.`).
-4. **Project settings > General > Your apps > Web app (</>)**: register "Southview web". Copy `apiKey`, `authDomain`, `projectId`, `appId` into `.env` as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`.
-5. Optional: **Authentication > Templates** to brand the sign-in email (sender name "Southview Park Residents").
-6. To send phone codes through Firebase set `AUTH_PHONE_PROVIDER=firebase`; leave `local` to use your own SMS gateway.
-7. `php artisan optimize`.
+### Continue with Google (no Firebase)
 
-### Show your own domain on the Google sign-in screen
+1. https://console.cloud.google.com, select project **fidelity-southview-park** (or any project you own).
+2. **Google Auth Platform > Branding** (first time it asks you to set it up): app name "Southview Park Residents", support email, logo `deploy/google-consent-logo-120.png`, home `https://fidelity-southview.co.zw`, privacy `https://fidelity-southview.co.zw/privacy`, terms `https://fidelity-southview.co.zw/terms`, authorised domain `fidelity-southview.co.zw`. **Audience**: External.
+3. **APIs & Services > Credentials > Create credentials > OAuth client ID**, type **Web application**, name "Southview web". Authorised redirect URIs:
+   - `http://localhost:8000/auth/google/callback` (your computer; open the app at `localhost`, not `127.0.0.1`)
+   - `https://fidelity-southview.co.zw/auth/google/callback`
+4. Copy the Client ID and Client secret into `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then `php artisan optimize`. The **Continue with Google** button appears only once both are set.
+5. Once the site is live: verify the domain in Search Console (DNS TXT record at Cloudflare, or the HTML file method through cPanel), then **Branding > Submit for verification** so Google shows the logo.
 
-By default Google says "Sign in to fidelity-southview-park.firebaseapp.com". The app serves Firebase's sign-in helper pages itself at `https://fidelity-southview.co.zw/__/auth/...`, so production can use our domain instead:
+Only the scopes `openid email profile` are requested, so Google does not need a security review. Committee and partner accounts can never sign in with Google.
 
-1. In the production `.env` set `FIREBASE_AUTH_DOMAIN=fidelity-southview.co.zw` (already in `.env.production.example`), then run `php artisan optimize`. Keep local `.env` on `firebaseapp.com`.
-2. https://console.cloud.google.com, select project **fidelity-southview-park**, then **APIs & Services > Credentials**. Open the OAuth client called **Web client (auto created by Google Service)**:
-   - Authorised JavaScript origins: add `https://fidelity-southview.co.zw`
-   - Authorised redirect URIs: add `https://fidelity-southview.co.zw/__/auth/handler`
-   - Save. Changes can take a few minutes.
-3. Firebase > Authentication > Settings > Authorized domains must include `fidelity-southview.co.zw` (step 3 above).
+### Phone codes via Firebase
 
-Google now shows "Sign in to fidelity-southview.co.zw".
+1. https://console.firebase.google.com, project **fidelity-southview-park**, **Build > Authentication > Sign-in method**: enable **Phone**.
+2. **Authentication > Settings > SMS region policy**: Allow, **Zimbabwe** only.
+3. **Authentication > Settings > Authorized domains**: add `fidelity-southview.co.zw`.
+4. Copy the web app's `apiKey`, `authDomain`, `projectId`, `appId` into `.env` as `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`, and set `AUTH_PHONE_PROVIDER=firebase`. Use `AUTH_PHONE_PROVIDER=local` to send codes through your own SMS gateway instead.
+5. Zimbabwe SMS cost about US$0.09 each; the first 10 per day are free. Set a budget alert in Google Cloud Billing. For testing, add your number under **Phone > Phone numbers for testing** with a fixed code.
 
-To show the association's **name and logo** as well:
-
-4. Google Cloud > **Google Auth Platform > Branding**: app name "Southview Park Residents", support email, logo `deploy/google-consent-logo-120.png`, home page `https://fidelity-southview.co.zw`, privacy `/privacy`, terms `/terms`, authorised domain `fidelity-southview.co.zw`.
-5. Verify domain ownership in Google Search Console (**URL prefix** method, **HTML file**): download the `googleXXXX.html` file, upload it with cPanel File Manager into `~/fspra/public/`, click Verify. This needs no Cloudflare access.
-6. Back in Branding, click **Submit for verification**. Google usually reviews in a few working days; until then the name may still show without the logo.
-
-These web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
+The Firebase web keys are public by design; security comes from the server checking every Firebase token's Google signature, project and freshness. Committee and partner accounts can never sign in through Firebase.
 
 ### Branded emails
 

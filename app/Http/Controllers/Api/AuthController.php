@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\GoogleAuthController;
 use App\Integrations\Firebase\TokenVerifier;
 use App\Models\AuditLog;
 use App\Models\User;
@@ -75,7 +76,7 @@ class AuthController extends Controller
 
         return response()->json([
             'firebase' => $enabled ? ['apiKey' => $f['api_key'], 'authDomain' => $f['auth_domain'] ?: $f['project_id'].'.firebaseapp.com', 'projectId' => $f['project_id'], 'appId' => $f['app_id']] : null,
-            'providers' => array_values(array_unique(array_merge($enabled ? $f['providers'] : [], ['email']))),
+            'providers' => array_values(array_filter([GoogleAuthController::enabled() ? 'google' : null, 'email'])),
             'email_via' => 'association',
             'phone_provider' => $enabled && config('fspra.phone_provider') === 'firebase' ? 'firebase' : 'local',
         ]);

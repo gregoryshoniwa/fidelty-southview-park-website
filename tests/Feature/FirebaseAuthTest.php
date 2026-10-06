@@ -43,7 +43,7 @@ class FirebaseAuthTest extends TestCase
 
     public function test_config_exposes_providers_only_when_configured(): void
     {
-        $this->getJson('/api/auth/config')->assertOk()->assertJsonPath('firebase.projectId', 'southview-test')->assertJsonPath('providers', ['google', 'email']);
+        $this->getJson('/api/auth/config')->assertOk()->assertJsonPath('firebase.projectId', 'southview-test')->assertJsonPath('providers', ['email']);
         config(['fspra.firebase.project_id' => null]);
         $this->getJson('/api/auth/config')->assertOk()->assertJsonPath('firebase', null)->assertJsonPath('phone_provider', 'local');
     }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AdController;
 use App\Http\Controllers\Web\DevCheckoutController;
+use App\Http\Controllers\Web\GoogleAuthController;
 use App\Http\Controllers\Web\SiteController;
 use App\Http\Controllers\Web\SpaController;
 use App\Http\Controllers\Web\WebhookController;
@@ -31,8 +32,6 @@ Route::controller(SiteController::class)->group(function () {
 });
 
 // Firebase sign-in helper pages served from our own domain (see FirebaseAuthProxyController).
-Route::match(['GET', 'POST'], '/__/{path}', \App\Http\Controllers\Web\FirebaseAuthProxyController::class)
-    ->where('path', '(auth|firebase)/.*')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])->middleware('throttle:120,1');
 
 Route::get('/go/ad/{sponsorship}', [AdController::class, 'click'])->name('ad.click');
 Route::post('/api/ads/impressions', [AdController::class, 'impressions'])->middleware('throttle:60,1');
@@ -45,5 +44,7 @@ if (config('fspra.tncb.driver') === 'fake' && ! app()->isProduction()) {
 }
 
 Route::redirect('/login', '/app/login');
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->middleware('throttle:20,1');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:20,1');
 Route::get('/app/{any?}', [SpaController::class, 'resident'])->where('any', '.*')->name('app');
 Route::get('/partner/{any?}', [SpaController::class, 'partner'])->where('any', '.*')->name('partner');

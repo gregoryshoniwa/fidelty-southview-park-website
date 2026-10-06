@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api;
 use App\Http\Controllers\Partner;
+use App\Http\Controllers\Web\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Public ----------
@@ -10,6 +11,8 @@ Route::post('/auth/verify', [Api\AuthController::class, 'verifyOtp'])->middlewar
 Route::get('/auth/config', [Api\AuthController::class, 'config']);
 Route::post('/auth/email', [Api\EmailLoginController::class, 'request'])->middleware('throttle:email-link');
 Route::post('/auth/email/verify', [Api\EmailLoginController::class, 'verify'])->middleware('throttle:20,1');
+Route::get('/auth/google/pending', [GoogleAuthController::class, 'pending']);
+Route::post('/auth/google/complete', [GoogleAuthController::class, 'complete'])->middleware('throttle:20,1');
 Route::post('/auth/firebase', [Api\AuthController::class, 'firebase'])->middleware('throttle:20,1');
 Route::get('/assistant/config', [Api\AssistantController::class, 'config']);
 Route::post('/assistant/chat', [Api\AssistantController::class, 'chat'])->middleware('throttle:assistant');

@@ -1,4 +1,4 @@
-// Firebase Authentication, loaded only when the resident chooses Google, email or Firebase phone.
+// Firebase Authentication, loaded only for Firebase phone codes. Google sign-in goes through /auth/google.
 import { api } from '@/shared/api.js';
 
 let cfgPromise = null;
@@ -19,12 +19,6 @@ async function fb() {
         return { a, auth };
     })();
     return authPromise;
-}
-
-export async function googleToken() {
-    const { a, auth } = await fb();
-    const res = await auth.signInWithPopup(a, new auth.GoogleAuthProvider());
-    return { token: await res.user.getIdToken(), name: res.user.displayName };
 }
 
 let verifier = null;
