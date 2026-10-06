@@ -105,3 +105,42 @@
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Dropdowns everywhere: our own green chevron with room around it, and a themed option list
+   in browsers that support customisable selects (Chrome/Edge 135+); others keep the native list. */
+@layer components {
+    select:not([multiple]):not([size]) {
+        appearance: none;
+        padding-right: 2.75rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230e4d2e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+        background-size: 1.15rem;
+        cursor: pointer;
+    }
+    select.select-dark:not([multiple]):not([size]) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9a227' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+
+    @supports (appearance: base-select) {
+        select:not([multiple]):not([size]),
+        select:not([multiple]):not([size])::picker(select) { appearance: base-select; }
+        select:not([multiple]):not([size]) { display: flex; align-items: center; }
+        select::picker-icon { display: none; }
+        select::picker(select) {
+            margin-block: 6px;
+            padding: 6px;
+            border: 1.5px solid var(--color-line);
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 16px 36px -14px rgb(7 51 32 / 0.35);
+        }
+        select option {
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            color: var(--color-ink);
+            font-weight: 500;
+        }
+        select option:hover, select option:focus-visible { background: var(--color-forest-100); outline: none; }
+        select option:checked { background: var(--color-gold-100); color: var(--color-forest-900); font-weight: 700; }
+        select option::checkmark { color: var(--color-gold-700); }
+    }
+}

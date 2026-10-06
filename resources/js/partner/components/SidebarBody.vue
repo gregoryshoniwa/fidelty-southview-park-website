@@ -20,7 +20,7 @@ const portal = usePortal();
 
         <div v-if="portal.partners.length > 1" class="px-1">
             <label :for="idPrefix + '-partner'" class="eyebrow mb-1.5 block text-cream/60">Working for</label>
-            <select :id="idPrefix + '-partner'" class="block min-h-11 w-full rounded-[6px] border border-forest-700 bg-forest-800 px-3 text-sm font-bold text-cream focus:border-gold-500 focus:outline-none"
+            <select :id="idPrefix + '-partner'" class="select-dark min-h-11 w-full rounded-[6px] border border-forest-700 bg-forest-800 px-3 text-sm font-bold text-cream focus:border-gold-500 focus:outline-none"
                     :value="portal.partner?.id" @change="emit('switch', Number($event.target.value))">
                 <option v-for="p in portal.partners" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>

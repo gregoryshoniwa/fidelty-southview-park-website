@@ -66,3 +66,11 @@ body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family
 .fi-simple-layout { background: radial-gradient(ellipse at 70% 0%, rgb(201 162 39 / 0.25), transparent 55%), linear-gradient(160deg, var(--sv-forest-950), var(--sv-forest-800)) !important; }
 .fi-simple-main { border-radius: 14px !important; border-top: 4px solid var(--sv-gold); }
 .fi-simple-layout .fi-logo { height: 5rem !important; }
+
+/* Native dropdowns in the admin: green chevron with breathing room, like the rest of the site. */
+.fi-select-input:not([multiple]) {
+    padding-inline-end: 2.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230e4d2e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.85rem center;
+    background-size: 1.1rem;
+}

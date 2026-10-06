@@ -83,9 +83,9 @@ function onOpenChange(v) { open.value = v; if (!v && voice.value.on) stopVoice()
 </script>
 
 <template>
-    <button v-if="!open" type="button" class="fixed right-4 z-50 inline-flex size-14 items-center justify-center gap-2 rounded-full border-[1.5px] border-gold-500 bg-forest-700 sm:size-auto sm:rounded-[8px] sm:px-4 sm:py-3 text-sm font-bold text-cream shadow-lift hover:bg-forest-600 sm:right-6"
-        :style="{ bottom: bottomOffset + 'px' }" aria-haspopup="dialog" @click="open = true">
-        <MessageCircleQuestion class="size-5 text-gold-400" /><span class="sr-only sm:not-sr-only">Ask the assistant</span>
+    <button v-if="!open" type="button" class="fixed right-4 z-50 inline-flex size-14 items-center justify-center rounded-full border-[1.5px] border-gold-500 bg-forest-700 text-cream shadow-lift transition hover:scale-105 hover:bg-forest-600 sm:right-6"
+        :style="{ bottom: bottomOffset + 'px' }" title="Ask the assistant" aria-haspopup="dialog" @click="open = true">
+        <MessageCircleQuestion class="size-6 text-gold-400" /><span class="sr-only">Ask the assistant</span>
     </button>
     <DialogRoot :open="open" @update:open="onOpenChange">
         <DialogPortal>
