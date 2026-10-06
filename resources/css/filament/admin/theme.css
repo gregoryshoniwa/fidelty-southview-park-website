@@ -65,16 +65,13 @@ body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family
 /* Sign-in pages: photo panel on the left (resources/views/filament/auth-aside.blade.php), card on the right,
    the same layout as the partner portal's login. */
 .fi-simple-layout { display: flex !important; flex-direction: column; min-height: 100dvh; background: #f3f1ec !important; }
-.dark .fi-simple-layout { background: var(--sv-forest-950) !important; }
 .fi-simple-main-ctn { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 2.5rem 1rem; }
 .fi-simple-main {
     margin: 0 !important; border-radius: 14px !important; border: 1px solid #e6e1d6;
     box-shadow: 0 1px 0 rgb(7 51 32 / 0.04), 0 18px 40px -24px rgb(7 51 32 / 0.35) !important;
 }
-.dark .fi-simple-main { border-color: rgb(201 162 39 / 0.18); background: #0b2a1c !important; }
 .fi-simple-main .fi-logo { display: none !important; } /* the panel on the left carries the brand */
 .fi-simple-header-heading { font-family: 'Playfair Display', Georgia, serif; font-size: 2rem !important; color: var(--sv-forest-900); text-align: left; }
-.dark .fi-simple-header-heading { color: var(--sv-cream); }
 .fi-simple-header { align-items: flex-start !important; text-align: left; }
 .fi-simple-header-subheading { text-align: left; }
 
