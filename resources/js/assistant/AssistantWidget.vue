@@ -14,11 +14,17 @@ const voice = ref({ on: false, state: 'idle', consent: false, askConsent: false 
 const escalating = ref(false);
 const escalated = ref(null);
 const log = ref(null);
-const messages = ref([{ role: 'assistant', text: "Hi, I'm the Southview assistant, an automated helper. Ask me about a service, a fee or your title deed. I'll pass anything I can't answer to the committee." }]);
+const name = ref('Tariro');
+const greeting = (n) => `Hi, I'm ${n}, the Southview assistant (automated). Ask me about a service, a fee, your title deed or our partners. I'll pass anything I can't answer to the committee.`;
+const messages = ref([{ role: 'assistant', text: greeting(name.value) }]);
 let live = null;
 
 onMounted(async () => {
-    try { voiceAvailable.value = (await api('/assistant/config', { quiet: true })).voice; } catch {}
+    try {
+        const c = await api('/assistant/config', { quiet: true });
+        voiceAvailable.value = c.voice;
+        if (c.name && c.name !== name.value) { name.value = c.name; if (messages.value.length === 1) messages.value[0].text = greeting(c.name); }
+    } catch {}
 });
 
 function scroll() { nextTick(() => { if (log.value) log.value.scrollTop = log.value.scrollHeight; }); }
@@ -57,7 +63,10 @@ async function startVoice() {
         const { LiveSession } = await import('./live.js');
         let lastRole = null;
         live = new LiveSession({
-            token: t.token, model: t.model, systemInstruction: t.system_instruction,
+            token: t.token, setup: t.setup,
+            onToolCall: (fn, args) => fn === 'search_web'
+                ? api('/assistant/search', { method: 'POST', body: { query: String(args?.query || '') }, quiet: true }).catch(() => ({ error: 'Web search is not available right now.' }))
+                : Promise.resolve({ error: 'Unknown tool.' }),
             onState: (s) => { voice.value.state = s; if (s === 'error' || s === 'ended') stopVoice(); },
             onTranscript: (role, text) => {
                 const last = messages.value[messages.value.length - 1];
@@ -84,8 +93,8 @@ function onOpenChange(v) { open.value = v; if (!v && voice.value.on) stopVoice()
 
 <template>
     <button v-if="!open" type="button" class="fixed right-4 z-50 inline-flex size-14 items-center justify-center rounded-full border-[1.5px] border-gold-500 bg-forest-700 text-cream shadow-lift transition hover:scale-105 hover:bg-forest-600 sm:right-6"
-        :style="{ bottom: bottomOffset + 'px' }" title="Ask the assistant" aria-haspopup="dialog" @click="open = true">
-        <MessageCircleQuestion class="size-6 text-gold-400" /><span class="sr-only">Ask the assistant</span>
+        :style="{ bottom: bottomOffset + 'px' }" :title="`Ask ${name}, the assistant`" aria-haspopup="dialog" @click="open = true">
+        <MessageCircleQuestion class="size-6 text-gold-400" /><span class="sr-only">Ask {{ name }}, the assistant</span>
     </button>
     <DialogRoot :open="open" @update:open="onOpenChange">
         <DialogPortal>
@@ -93,8 +102,8 @@ function onOpenChange(v) { open.value = v; if (!v && voice.value.on) stopVoice()
             <DialogContent class="fixed inset-x-0 bottom-0 z-[81] flex h-[86dvh] flex-col overflow-hidden rounded-t-[16px] bg-white shadow-2xl animate-rise focus:outline-none sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[600px] sm:w-[400px] sm:rounded-[14px] sm:border sm:border-line">
                 <div class="flex items-center gap-3 bg-forest-900 px-4 py-3 text-cream">
                     <span class="flex size-9 items-center justify-center rounded-[8px] bg-gold-500/20 text-gold-400"><Sparkles class="size-5" /></span>
-                    <div class="flex-1"><DialogTitle class="font-serif text-base font-bold">Southview assistant</DialogTitle><DialogDescription class="text-xs text-cream/70">Automated. Answers from our help pages only.</DialogDescription></div>
-                    <DialogClose class="inline-flex size-9 items-center justify-center rounded-[6px] hover:bg-white/10" aria-label="Close assistant"><X class="size-5" /></DialogClose>
+                    <div class="flex-1"><DialogTitle class="font-serif text-base font-bold">{{ name }}</DialogTitle><DialogDescription class="text-xs text-cream/70">Southview's automated assistant. Answers from this website.</DialogDescription></div>
+                    <DialogClose class="inline-flex size-9 items-center justify-center rounded-[6px] hover:bg-white/10" :aria-label="`Close ${name}`"><X class="size-5" /></DialogClose>
                 </div>
                 <div ref="log" class="flex flex-1 flex-col gap-3 overflow-y-auto bg-cream px-4 py-4" role="log" aria-live="polite">
                     <div v-for="(m, i) in messages" :key="i" class="flex flex-col" :class="m.role === 'user' ? 'items-end' : 'items-start'">

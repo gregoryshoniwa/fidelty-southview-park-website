@@ -128,7 +128,7 @@ class Settings extends Page
                 ->icon(Heroicon::OutlinedArrowPath)
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription('Re-indexes published FAQs, enabled services, recent notices and published pages for the assistant.')
+                ->modalDescription('Re-reads everything published on the website for the assistant. This also happens by itself after any change and every hour.')
                 ->action(function () {
                     $n = app(AssistantService::class)->rebuildKnowledge();
                     AuditLog::record('admin.assistant.knowledge_rebuilt', null, ['chunks' => $n]);

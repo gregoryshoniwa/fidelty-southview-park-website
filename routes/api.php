@@ -36,6 +36,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('/me/delete-request', [Api\AccountController::class, 'requestDeletion']);
     Route::post('/assistant/escalate', [Api\AssistantController::class, 'escalate']);
     Route::post('/assistant/live', [Api\AssistantController::class, 'live'])->middleware('throttle:5,1440');
+    Route::post('/assistant/search', [Api\AssistantController::class, 'search'])->middleware('throttle:assistant-search');
 
     Route::post('/verify/start', [Api\VerifyController::class, 'start'])->middleware('throttle:10,60');
     Route::post('/verify/confirm', [Api\VerifyController::class, 'confirm'])->middleware('throttle:20,60');

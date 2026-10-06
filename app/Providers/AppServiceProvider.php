@@ -12,6 +12,15 @@ use App\Integrations\Sms\SmsGateway;
 use App\Integrations\Tncb\FakeGateway;
 use App\Integrations\Tncb\HttpGateway;
 use App\Integrations\Tncb\PaymentGateway;
+use App\Models\CmsPage;
+use App\Models\CommitteeMember;
+use App\Models\CommunityPage;
+use App\Models\Faq;
+use App\Models\Minute;
+use App\Models\Notice;
+use App\Models\Partner;
+use App\Models\Service;
+use App\Services\AssistantService;
 use App\Services\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +53,13 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
 
+        // Anything published on the website changes what the assistant knows: rebuild before its next answer.
+        foreach ([Faq::class, Service::class, Notice::class, CmsPage::class, Partner::class,
+            CommitteeMember::class, Minute::class, CommunityPage::class] as $model) {
+            $model::saved(fn () => AssistantService::markStale());
+            $model::deleted(fn () => AssistantService::markStale());
+        }
+
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
             if (! $this->app->runningInConsole() && strlen((string) config('fspra.id_hash_salt')) < 32) {
@@ -64,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $r) => Limit::perMinute(90)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('payments', fn (Request $r) => Limit::perMinute(10)->by($r->user()?->id ?: $r->ip()));
         RateLimiter::for('assistant', fn (Request $r) => [Limit::perMinute(12)->by($r->user()?->id ?: $r->ip()), Limit::perDay(200)->by($r->ip())]);
+        RateLimiter::for('assistant-search', fn (Request $r) => [Limit::perMinute(6)->by($r->user()?->id ?: $r->ip()), Limit::perDay(60)->by($r->user()?->id ?: $r->ip())]);
         RateLimiter::for('forms', fn (Request $r) => Limit::perMinute(6)->by($r->ip()));
     }
 }

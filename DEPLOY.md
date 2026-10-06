@@ -151,6 +151,8 @@ With `none`, no SMS is sent. Residents prove their number on WhatsApp, or type i
 
 **WhatsApp channel for notices:** residents follow the association's channel instead of subscribing by SMS. In WhatsApp open **Updates > (your channel) > Copy link**, put it in `.env` as `WHATSAPP_CHANNEL_URL=https://whatsapp.com/channel/...`, then `php artisan optimize`. The **Get notices on WhatsApp** buttons appear on the home and notices pages; while it is blank they stay hidden.
 
+**Assistant (Tariro):** set `GEMINI_API_KEY` (Google AI Studio > Get API key), then `php artisan optimize`. She answers from everything published on the website, re-reading it after any change in the admin and every hour. `ASSISTANT_NAME` and `ASSISTANT_VOICE` change her name and Gemini Live voice. Web search (`ASSISTANT_WEB_SEARCH=true`) covers only Fidelity Southview Park and active partners, enforced by the server; it needs Google Search grounding, which the free tier of a new key does not include, so turn on billing for the key in Google AI Studio to use it. Until then she says web search is unavailable and answers from the website.
+
 ## 10. Updating
 
 Build a new zip, upload, extract over `~/fspra` (your `.env` and `storage/` are not in the zip), then:

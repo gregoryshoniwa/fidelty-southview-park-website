@@ -57,7 +57,7 @@ Schedule::command('fspra:notice-sms')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')->everyMinute()->withoutOverlapping()->environments(['production', 'staging']);
 Schedule::command('fspra:sms-flush')->dailyAt('07:05');
 Schedule::command('fspra:verify-ledger')->dailyAt('02:30');
-Schedule::call(fn () => app(AssistantService::class)->rebuildKnowledge())->dailyAt('03:00');
+Schedule::call(fn () => app(AssistantService::class)->rebuildKnowledge())->hourly(); // also picks up notices scheduled to go live
 Schedule::call(fn () => OtpCode::where('created_at', '<', now()->subDays(2))->delete())->daily();
 Schedule::call(fn () => AssistantConversation::where('created_at', '<', now()->subDays(90))->delete())->daily();
 Schedule::command('auth:clear-resets')->daily();

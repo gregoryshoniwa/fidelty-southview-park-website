@@ -15,7 +15,7 @@ class AssistantController extends Controller
 
     public function config()
     {
-        return response()->json(['voice' => $this->assistant->enabled(), 'llm' => $this->assistant->enabled()]);
+        return response()->json(['name' => AssistantService::name(), 'voice' => $this->assistant->enabled(), 'llm' => $this->assistant->enabled()]);
     }
 
     public function chat(Request $request)
@@ -40,6 +40,14 @@ class AssistantController extends Controller
         }
 
         return response()->json($tok + ['session_id' => $sid]);
+    }
+
+    /** Web search for the voice assistant's tool calls (the text chat searches on the server directly). */
+    public function search(Request $request)
+    {
+        $data = $request->validate(['query' => ['required', 'string', 'max:200']]);
+
+        return response()->json($this->assistant->searchWeb($data['query']));
     }
 
     public function transcript(Request $request)

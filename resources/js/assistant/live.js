@@ -14,8 +14,9 @@ function int16FromB64(b64) {
 }
 
 export class LiveSession {
-    constructor({ token, model, systemInstruction, onTranscript, onState }) {
-        Object.assign(this, { token, model, systemInstruction, onTranscript, onState });
+    // setup: the session settings our server locked into the token (model, voice, instructions, tools).
+    constructor({ token, setup, onTranscript, onState, onToolCall }) {
+        Object.assign(this, { token, setup, onTranscript, onState, onToolCall });
         this.playHead = 0; this.closed = false;
     }
 
@@ -26,17 +27,13 @@ export class LiveSession {
         this.outCtx = new AudioContext({ sampleRate: 24000 });
         this.ws = new WebSocket(`${WS}?access_token=${encodeURIComponent(this.token)}`);
         this.ws.onopen = () => {
-            this.ws.send(JSON.stringify({ setup: {
-                model: 'models/' + this.model,
-                generationConfig: { responseModalities: ['AUDIO'] },
-                systemInstruction: { parts: [{ text: this.systemInstruction }] },
-                inputAudioTranscription: {}, outputAudioTranscription: {},
-            } }));
+            this.ws.send(JSON.stringify({ setup: this.setup }));
         };
         this.ws.onmessage = async (ev) => {
             const text = typeof ev.data === 'string' ? ev.data : await ev.data.text();
             const msg = JSON.parse(text);
             if (msg.setupComplete) { this.onState?.('listening'); this.startMic(); }
+            if (msg.toolCall?.functionCalls?.length) this.answerTools(msg.toolCall.functionCalls);
             const sc = msg.serverContent;
             if (!sc) return;
             sc.modelTurn?.parts?.forEach((p) => { if (p.inlineData?.data) this.play(int16FromB64(p.inlineData.data)); });
@@ -46,6 +43,14 @@ export class LiveSession {
         };
         this.ws.onerror = () => this.onState?.('error');
         this.ws.onclose = () => { if (!this.closed) this.onState?.('ended'); this.stop(); };
+    }
+
+    // The model asked for a web search: our server runs it (and enforces its scope), then we hand back the result.
+    async answerTools(calls) {
+        const functionResponses = await Promise.all(calls.map(async (c) => ({
+            id: c.id, name: c.name, response: await (this.onToolCall?.(c.name, c.args) ?? Promise.resolve({ error: 'Unavailable.' })),
+        })));
+        if (this.ws?.readyState === 1) this.ws.send(JSON.stringify({ toolResponse: { functionResponses } }));
     }
 
     startMic() {

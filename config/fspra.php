@@ -11,8 +11,8 @@ return [
     'payments_live' => (bool) env('PAYMENTS_LIVE', false),
     'tncb' => ['driver' => env('TNCB_DRIVER', 'fake'), 'base_url' => env('TNCB_BASE_URL'), 'merchant_id' => env('TNCB_MERCHANT_ID'),
         'api_key' => env('TNCB_API_KEY'), 'webhook_secret' => env('TNCB_WEBHOOK_SECRET')],
-    'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'live_model' => env('GEMINI_LIVE_MODEL', 'gemini-live-2.5-flash-preview'),
-        'text_model' => env('GEMINI_TEXT_MODEL', 'gemini-2.5-flash'), 'daily_token_cap' => (int) env('ASSISTANT_DAILY_TOKEN_CAP', 2000000), 'daily_live_sessions' => (int) env('ASSISTANT_DAILY_VOICE_SESSIONS', 150)],
+    'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'live_model' => env('GEMINI_LIVE_MODEL', 'gemini-3.8-live'),
+        'text_model' => env('GEMINI_TEXT_MODEL', 'gemini-3.5-flash'), 'text_fallback_model' => env('GEMINI_TEXT_FALLBACK_MODEL', 'gemini-3.5-flash-lite'), 'daily_token_cap' => (int) env('ASSISTANT_DAILY_TOKEN_CAP', 2000000), 'daily_live_sessions' => (int) env('ASSISTANT_DAILY_VOICE_SESSIONS', 150)],
     // Firebase Authentication, used only for phone SMS codes (Google sign-in uses Socialite, see config/services.php).
     // Phone SMS needs the Blaze plan: US$0.09 per SMS to Zimbabwe, first 10 per day free.
     'firebase' => [
@@ -32,6 +32,14 @@ return [
         'token' => env('WHATSAPP_TOKEN'),                     // optional: lets us reply "Thank you, confirmed"
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'), // optional, with the token
         'channel_url' => env('WHATSAPP_CHANNEL_URL'),         // public channel link; shows the "Follow" buttons for notices
+    ],
+    // The assistant's name and Gemini Live voice (prebuilt voice names: https://ai.google.dev/gemini-api/docs/speech-generation#voices).
+    // Web search covers only Fidelity Southview Park and current partners, and needs a Gemini key with Google Search grounding quota.
+    'assistant' => [
+        'name' => env('ASSISTANT_NAME', 'Tariro'),
+        'voice' => env('ASSISTANT_VOICE', 'Aoede'),
+        'web_search' => (bool) env('ASSISTANT_WEB_SEARCH', true),
+        'daily_web_searches' => (int) env('ASSISTANT_DAILY_WEB_SEARCHES', 300),
     ],
     'consent_version' => '2026-10-01',
     'documents' => ['max_kb' => 8192, 'mimes' => ['pdf', 'jpg', 'jpeg', 'png', 'webp']],
