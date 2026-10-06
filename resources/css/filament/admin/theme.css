@@ -126,8 +126,11 @@ body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family
 .fi-simple-main .fi-checkbox-input:checked { background-color: var(--sv-forest-900); }
 /* Like the partner portal: Continue stays greyed out until the required fields are filled in */
 .fi-simple-main form:has(input[required]:invalid) .fi-btn.fi-color-primary[type="submit"] { opacity: 0.55; pointer-events: none; cursor: default; }
-.fi-simple-main .fi-input-wrp-suffix { padding-inline: 0.5rem 0.75rem; }
-.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn { color: #5b665f !important; }
-.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn:hover, .fi-simple-main .fi-input-wrp-suffix .fi-icon-btn:focus-visible { color: var(--sv-forest-900) !important; background: transparent !important; }
-.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn svg { width: 1.25rem; height: 1.25rem; }
+/* Every password box in the admin (sign-in, two-factor setup, profile, user forms): eye button inside
+   the box with no divider, grey until hovered, like the partner portal. */
+.fi-input-wrp-suffix:has(.fi-icon-btn[aria-label$="password"]) { border-inline-start: 0 !important; padding-inline: 0.5rem 0.75rem !important; }
+.fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"] { color: #5b665f !important; }
+.fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"]:hover,
+.fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"]:focus-visible { color: var(--sv-forest-900) !important; background: transparent !important; }
+.fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"] svg { width: 1.25rem; height: 1.25rem; }
 .fi-simple-main .fi-input::placeholder { color: rgb(91 102 95 / 0.7); }
