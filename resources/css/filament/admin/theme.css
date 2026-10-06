@@ -160,3 +160,5 @@ select.fi-select-input:not([multiple]) {
 .fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"] svg { width: 1.25rem; height: 1.25rem; }
 .fi-simple-main .fi-input::placeholder { color: rgb(91 102 95 / 0.7); }
 .fi-section.fi-section-not-contained { box-shadow: none !important; border-radius: 0 !important; background: transparent !important; }
+/* The Actions heading matches the other column headings */
+.fi-ta-actions-header-cell { background: var(--sv-mint) !important; }

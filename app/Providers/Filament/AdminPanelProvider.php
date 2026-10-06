@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
     {
         AdminAudit::register();
         // Table rows: icon-only action buttons with the action's name as a hover hint (menus keep their labels).
-        Table::configureUsing(fn (Table $table) => $table->modifyUngroupedRecordActionsUsing(
+        Table::configureUsing(fn (Table $table) => $table->recordActionsColumnLabel('Actions')->modifyUngroupedRecordActionsUsing(
             function (Action $action) {
                 if ($action->getIcon() || $action->getTableIcon()) { // Edit/View/Delete keep theirs in tableIcon
                     $action->iconButton()->tooltip(fn (Action $action) => $action->getLabel());
