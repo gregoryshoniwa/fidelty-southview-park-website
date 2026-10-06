@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo('/images/logo-128.webp')
             ->brandLogoHeight('3.5rem')
             ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(\Filament\View\PanelsRenderHook::SIMPLE_LAYOUT_START, fn () => view('filament.auth-aside'))
             ->font('Manrope Variable', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->favicon('/favicon.ico')
             ->colors([

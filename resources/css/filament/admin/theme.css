@@ -62,10 +62,47 @@
 .fi-btn { border-radius: 6px !important; }
 body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif; }
 
-/* Sign-in page */
-.fi-simple-layout { background: radial-gradient(ellipse at 70% 0%, rgb(201 162 39 / 0.25), transparent 55%), linear-gradient(160deg, var(--sv-forest-950), var(--sv-forest-800)) !important; }
-.fi-simple-main { border-radius: 14px !important; border-top: 4px solid var(--sv-gold); }
-.fi-simple-layout .fi-logo { height: 5rem !important; }
+/* Sign-in pages: photo panel on the left (resources/views/filament/auth-aside.blade.php), card on the right,
+   the same layout as the partner portal's login. */
+.fi-simple-layout { display: flex !important; flex-direction: column; min-height: 100dvh; background: #f3f1ec !important; }
+.dark .fi-simple-layout { background: var(--sv-forest-950) !important; }
+.fi-simple-main-ctn { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 2.5rem 1rem; }
+.fi-simple-main {
+    margin: 0 !important; border-radius: 14px !important; border: 1px solid #e6e1d6;
+    box-shadow: 0 1px 0 rgb(7 51 32 / 0.04), 0 18px 40px -24px rgb(7 51 32 / 0.35) !important;
+}
+.dark .fi-simple-main { border-color: rgb(201 162 39 / 0.18); background: #0b2a1c !important; }
+.fi-simple-main .fi-logo { display: none !important; } /* the panel on the left carries the brand */
+.fi-simple-header-heading { font-family: 'Playfair Display', Georgia, serif; font-size: 2rem !important; color: var(--sv-forest-900); text-align: left; }
+.dark .fi-simple-header-heading { color: var(--sv-cream); }
+.fi-simple-header { align-items: flex-start !important; text-align: left; }
+.fi-simple-header-subheading { text-align: left; }
+
+.sv-auth-aside {
+    position: relative; isolation: isolate; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 2rem;
+    padding: 2rem 1.5rem; background: var(--sv-forest-900); color: var(--sv-cream);
+    align-self: stretch; width: 100%;
+}
+.sv-auth-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.sv-auth-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, var(--sv-forest-900), rgb(7 51 32 / 0.75), rgb(7 51 32 / 0.45)); }
+.sv-auth-brand { display: flex; align-items: center; gap: 0.75rem; }
+.sv-auth-logo { width: 3rem; height: 3rem; border-radius: 10px; background: #fff; box-shadow: 0 0 0 1px rgb(201 162 39 / 0.45); }
+.sv-auth-eyebrow { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgb(250 247 240 / 0.65); }
+.sv-auth-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #e3c35a; }
+.sv-auth-copy, .sv-auth-foot { display: none; }
+.sv-auth-copy h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 700; line-height: 1.15; }
+.sv-auth-copy p { margin-top: 1rem; color: rgb(250 247 240 / 0.78); font-size: 1.05rem; line-height: 1.6; }
+.sv-auth-foot { font-size: 0.75rem; color: rgb(250 247 240 / 0.5); }
+
+@media (min-width: 1024px) {
+    .fi-simple-layout { flex-direction: row; }
+    .sv-auth-aside { width: 44%; min-height: 100dvh; position: sticky; top: 0; padding: 3rem; }
+    .sv-auth-shade { background: linear-gradient(to top right, var(--sv-forest-900), rgb(7 51 32 / 0.7), rgb(7 51 32 / 0.25)); }
+    .sv-auth-copy { display: block; max-width: 28rem; }
+    .sv-auth-foot { display: block; }
+    .fi-simple-main-ctn { align-items: center; }
+}
 
 /* Native dropdowns in the admin: green chevron with breathing room, like the rest of the site. */
 .fi-select-input:not([multiple]) {
