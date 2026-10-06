@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Auth;
 
 use Filament\Actions\Action;
 use Filament\Auth\Pages\Login as BaseLogin;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
@@ -23,6 +24,15 @@ class Login extends BaseLogin
         return filled($this->userUndertakingMultiFactorAuthentication)
             ? 'Open your authenticator app and enter the 6-digit code for Southview Park Committee.'
             : 'Use the email address and password the committee registered for you.';
+    }
+
+    /** Email and password only: no "Remember me", committee sessions end when the browser closes. */
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            $this->getEmailFormComponent(),
+            $this->getPasswordFormComponent(),
+        ]);
     }
 
     protected function getAuthenticateFormAction(): Action

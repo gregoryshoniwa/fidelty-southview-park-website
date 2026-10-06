@@ -124,3 +124,5 @@ body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family
 .fi-simple-main .fi-btn.fi-color-primary:hover { background: #b8921f !important; }
 .fi-simple-main .fi-btn.fi-color-primary > .fi-icon, .fi-simple-main .fi-btn.fi-color-primary svg { color: #14201a !important; }
 .fi-simple-main .fi-checkbox-input:checked { background-color: var(--sv-forest-900); }
+/* Like the partner portal: Continue stays greyed out until the required fields are filled in */
+.fi-simple-main form:has(input[required]:invalid) .fi-btn.fi-color-primary[type="submit"] { opacity: 0.55; pointer-events: none; cursor: default; }
