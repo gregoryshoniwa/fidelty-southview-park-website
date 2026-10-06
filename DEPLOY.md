@@ -87,7 +87,7 @@ Run `php artisan optimize` after every `.env` change.
 ### Continue with Google (no Firebase)
 
 1. https://console.cloud.google.com, select project **fidelity-southview-park** (or any project you own).
-2. **Google Auth Platform > Branding** (first time it asks you to set it up): app name "Southview Park Residents", support email, logo `deploy/google-consent-logo-120.png`, home `https://fidelity-southview.co.zw`, privacy `https://fidelity-southview.co.zw/privacy`, terms `https://fidelity-southview.co.zw/terms`, authorised domain `fidelity-southview.co.zw`. **Audience**: External.
+2. **Google Auth Platform > Branding** (first time it asks you to set it up): app name "Fidelity Southview Park Residents Association", support email, logo `deploy/google-consent-logo-120.png`, home `https://fidelity-southview.co.zw`, privacy `https://fidelity-southview.co.zw/privacy`, terms `https://fidelity-southview.co.zw/terms`, authorised domain `fidelity-southview.co.zw`. **Audience**: External.
 3. **APIs & Services > Credentials > Create credentials > OAuth client ID**, type **Web application**, name "Southview web". Authorised redirect URIs:
    - `http://localhost:8000/auth/google/callback` (your computer; open the app at `localhost`, not `127.0.0.1`)
    - `https://fidelity-southview.co.zw/auth/google/callback`
