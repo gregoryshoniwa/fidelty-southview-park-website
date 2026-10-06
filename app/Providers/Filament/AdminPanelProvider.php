@@ -2,11 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Support\AdminAudit;
 use App\Filament\Support\Uploads;
 use App\Filament\Widgets;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\FontProviders\LocalFontProvider;
+use Filament\Forms\View\FormsIconAlias;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -15,6 +18,9 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Facades\FilamentIcon;
+use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -34,6 +40,11 @@ class AdminPanelProvider extends PanelProvider
     public function boot(): void
     {
         AdminAudit::register();
+        // Outline eye icons for show/hide password, matching the partner portal.
+        FilamentIcon::register([
+            FormsIconAlias::COMPONENTS_TEXT_INPUT_ACTIONS_SHOW_PASSWORD => Heroicon::OutlinedEye,
+            FormsIconAlias::COMPONENTS_TEXT_INPUT_ACTIONS_HIDE_PASSWORD => Heroicon::OutlinedEyeSlash,
+        ]);
     }
 
     public function panel(Panel $panel): Panel
@@ -42,7 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
             ->profile()
             ->multiFactorAuthentication([
                 AppAuthentication::make()
@@ -54,8 +65,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('3.5rem')
             ->darkMode(false) // always light, like the resident app and partner portal
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->renderHook(\Filament\View\PanelsRenderHook::SIMPLE_LAYOUT_START, fn () => view('filament.auth-aside'))
-            ->font('Manrope Variable', provider: \Filament\FontProviders\LocalFontProvider::class)
+            ->renderHook(PanelsRenderHook::SIMPLE_LAYOUT_START, fn () => view('filament.auth-aside'))
+            ->font('Manrope Variable', provider: LocalFontProvider::class)
             ->favicon('/favicon.ico')
             ->colors([
                 'primary' => [

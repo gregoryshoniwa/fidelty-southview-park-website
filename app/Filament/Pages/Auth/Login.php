@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Auth;
 
 use Filament\Actions\Action;
 use Filament\Auth\Pages\Login as BaseLogin;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -33,6 +34,17 @@ class Login extends BaseLogin
             $this->getEmailFormComponent(),
             $this->getPasswordFormComponent(),
         ]);
+    }
+
+    protected function getEmailFormComponent(): Component
+    {
+        return parent::getEmailFormComponent()->placeholder('name@example.com');
+    }
+
+    /** Eye button inside the box with no divider, like the partner portal. */
+    protected function getPasswordFormComponent(): Component
+    {
+        return parent::getPasswordFormComponent()->inlineSuffix();
     }
 
     protected function getAuthenticateFormAction(): Action

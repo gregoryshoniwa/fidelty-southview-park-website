@@ -126,3 +126,8 @@ body, .fi-body, .fi-simple-layout, input, button, select, textarea { font-family
 .fi-simple-main .fi-checkbox-input:checked { background-color: var(--sv-forest-900); }
 /* Like the partner portal: Continue stays greyed out until the required fields are filled in */
 .fi-simple-main form:has(input[required]:invalid) .fi-btn.fi-color-primary[type="submit"] { opacity: 0.55; pointer-events: none; cursor: default; }
+.fi-simple-main .fi-input-wrp-suffix { padding-inline: 0.5rem 0.75rem; }
+.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn { color: #5b665f !important; }
+.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn:hover, .fi-simple-main .fi-input-wrp-suffix .fi-icon-btn:focus-visible { color: var(--sv-forest-900) !important; background: transparent !important; }
+.fi-simple-main .fi-input-wrp-suffix .fi-icon-btn svg { width: 1.25rem; height: 1.25rem; }
+.fi-simple-main .fi-input::placeholder { color: rgb(91 102 95 / 0.7); }
