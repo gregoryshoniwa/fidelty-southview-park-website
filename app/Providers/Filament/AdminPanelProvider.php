@@ -105,9 +105,9 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->navigationGroups([
                 'Inbox',
+                'Community',
                 'Content',
                 'Services and partners',
-                'Community',
                 'Finance',
                 'System',
             ])
