@@ -52,7 +52,8 @@
 
 /* Page */
 .fi-header-heading { font-family: 'Playfair Display', Georgia, serif; color: var(--sv-forest-900); letter-spacing: -0.01em; }
-.fi-section, .fi-ta-ctn, .fi-wi-stats-overview-stat, .fi-wi-widget > .fi-section, .fi-fo-component-ctn > .fi-section {
+/* Only real cards get the soft shadow: not the invisible (uncontained) section that lays out the stat cards. */
+.fi-section:not(.fi-section-not-contained), .fi-ta-ctn, .fi-wi-stats-overview-stat {
     border-radius: 12px !important;
     box-shadow: 0 1px 0 rgb(7 51 32 / 0.06), 0 10px 30px -18px rgb(7 51 32 / 0.35) !important;
 }
@@ -137,3 +138,4 @@ select.fi-select-input:not([multiple]) {
 .fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"]:focus-visible { color: var(--sv-forest-900) !important; background: transparent !important; }
 .fi-input-wrp-suffix .fi-icon-btn[aria-label$="password"] svg { width: 1.25rem; height: 1.25rem; }
 .fi-simple-main .fi-input::placeholder { color: rgb(91 102 95 / 0.7); }
+.fi-section.fi-section-not-contained { box-shadow: none !important; border-radius: 0 !important; background: transparent !important; }
