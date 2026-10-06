@@ -18,7 +18,7 @@
 <script type="application/ld+json" nonce="{{ app('csp-nonce') }}">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'Service', 'name' => $service->name, 'description' => $service->summary, 'provider' => ['@id' => url('/#org')], 'areaServed' => 'Fidelity Southview Park, Harare', 'offers' => ['@type' => 'Offer', 'price' => $service->fee_type === 'flat' ? (string) $service->fee_amount : '0', 'priceCurrency' => $service->fee_currency]], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
 @endpush
 @section('content')
-@include('partials.page-hero', ['eyebrow' => $service->partner?->name ?? 'The association', 'heading' => $service->name, 'lead' => $service->summary, 'crumbs' => [['Services', route('services')], [$service->name, null]]])
+@include('partials.page-hero', ['eyebrow' => $service->providerName(), 'heading' => $service->name, 'lead' => $service->summary, 'crumbs' => [['Services', route('services')], [$service->name, null]]])
 <div class="wrap grid gap-10 py-14 lg:grid-cols-[1fr_340px]">
     <article class="prose-site max-w-3xl">
         @if ($comingSoon)
@@ -36,7 +36,7 @@
     <aside class="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
         <div class="card flex flex-col gap-4 p-6">
             <div class="flex items-center justify-between"><span class="text-sm font-semibold text-muted">Fee</span><span class="font-extrabold text-forest-900">{{ $comingSoon && $service->slug === 'pay-bills' ? 'Shown at checkout' : $service->feeLabel() }}</span></div>
-            <div class="flex items-center justify-between"><span class="text-sm font-semibold text-muted">Partner</span><span class="font-bold text-gold-600">{{ $service->partner?->name ?? 'The association' }}</span></div>
+            <div class="flex items-center justify-between"><span class="text-sm font-semibold text-muted">Partner</span><span class="font-bold text-gold-600">{{ $service->providerName() }}</span></div>
             <div class="flex items-center justify-between"><span class="text-sm font-semibold text-muted">Status</span>@if($comingSoon)<span class="chip chip-gold">Coming soon</span>@else<span class="chip chip-green">Open</span>@endif</div>
             @if (! $comingSoon)
                 <a href="{{ $cta[0] }}" class="btn btn-gold w-full">{{ $cta[1] }}</a>
@@ -44,8 +44,18 @@
                 <a href="{{ route('notices') }}#subscribe" class="btn btn-outline w-full">Tell me when it opens</a>
             @endif
         </div>
-        @if ($service->partner?->logoUrl())
-            <div class="card flex items-center justify-center p-6"><img src="{{ $service->partner->logoUrl() }}" alt="{{ $service->partner->name }}" class="max-h-16 object-contain" loading="lazy"></div>
+        @php $providers = $service->providerPartners()->filter(fn ($p) => $p->logoUrl()); @endphp
+        @if ($providers->count() === 1)
+            <div class="card flex items-center justify-center p-6"><img src="{{ $providers->first()->logoUrl() }}" alt="{{ $providers->first()->name }}" class="max-h-16 object-contain" loading="lazy"></div>
+        @elseif ($providers->count() > 1)
+            <div class="card flex flex-col gap-3 p-5">
+                <p class="text-sm font-semibold text-muted">Choose your firm when you open your file</p>
+                <ul class="grid grid-cols-2 gap-3">
+                    @foreach ($providers as $p)
+                        <li class="flex h-16 items-center justify-center rounded-[8px] border border-line bg-white p-2"><img src="{{ $p->logoUrl() }}" alt="{{ $p->name }}" class="max-h-11 max-w-full object-contain" loading="lazy"></li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
     </aside>
 </div>

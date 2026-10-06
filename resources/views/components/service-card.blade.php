@@ -17,6 +17,6 @@
         @else
             <span class="chip chip-grey">Phase {{ $service->phase }}</span>
         @endif
-        <span class="text-gold-600">{{ $service->partner?->name ?? 'The association' }}</span>
+        <span class="text-gold-600">{{ $service->providerName() }}</span>
     </span>
 </a>

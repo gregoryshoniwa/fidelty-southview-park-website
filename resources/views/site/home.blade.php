@@ -106,8 +106,6 @@
     </div>
 </section>
 
-{{-- BILLBOARD --}}
-<div class="wrap pb-20"><x-ad placement="billboard" :ad="$billboard" class="mx-auto max-w-[970px]" /></div>
 </div>
 
 {{-- HOW IT WORKS --}}

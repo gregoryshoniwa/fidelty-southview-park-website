@@ -50,7 +50,6 @@ class SiteController extends Controller
             'partners' => Partner::where('active', true)->whereNotNull('logo_path')->whereIn('type', ['developer', 'law_firm', 'bank'])->get(),
             'stats' => self::stats(),
             'hero' => Sponsorship::live('hero_takeover')->first(),
-            'billboard' => Sponsorship::live('billboard')->inRandomOrder()->first(),
             'tile' => Sponsorship::live('sponsored_tile')->inRandomOrder()->first(),
             'rect' => Sponsorship::live('medium_rect')->inRandomOrder()->first(),
             'half' => Sponsorship::live('half_page')->inRandomOrder()->first(),
