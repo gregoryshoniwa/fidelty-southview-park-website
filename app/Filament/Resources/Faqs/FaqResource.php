@@ -66,7 +66,7 @@ class FaqResource extends Resource
             ->columns([
                 TextColumn::make('sort')->label('#')->sortable(),
                 TextColumn::make('question')->searchable()->wrap()->limit(90),
-                TextColumn::make('topic')->badge()->color('gray')->formatStateUsing(fn ($s) => self::topics()[$s] ?? $s),
+                TextColumn::make('topic')->badge()->color('gray')->formatStateUsing(fn ($state) => self::topics()[$state] ?? $state),
                 IconColumn::make('published')->boolean(),
             ])
             ->filters([

@@ -6,6 +6,7 @@ use App\Filament\Resources\Sponsorships\Pages\CreateSponsorship;
 use App\Filament\Resources\Sponsorships\Pages\EditSponsorship;
 use App\Filament\Resources\Sponsorships\Pages\ListSponsorships;
 use App\Filament\Support\Uploads;
+use App\Models\Partner;
 use App\Models\Sponsorship;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
@@ -72,7 +73,7 @@ class SponsorshipResource extends Resource
                 TextInput::make('price')->numeric()->minValue(0)->default(0)->prefix('$'),
                 Select::make('currency')->options(['USD' => 'USD', 'ZWG' => 'ZWG'])->default('USD')->required(),
                 Select::make('status')->options(self::STATUSES)->default('active')->required(),
-                Select::make('partner_id')->label('Partner (optional)')->options(fn () => \App\Models\Partner::orderBy('name')->pluck('name', 'id'))->searchable(),
+                Select::make('partner_id')->label('Partner (optional)')->options(fn () => Partner::orderBy('name')->pluck('name', 'id'))->searchable(),
             ]),
         ])->columns(3);
     }
@@ -84,16 +85,18 @@ class SponsorshipResource extends Resource
             ->columns([
                 ImageColumn::make('creative_path')->label('')->disk(Uploads::DISK)->height(40),
                 TextColumn::make('advertiser')->searchable()->description(fn (Sponsorship $r) => $r->headline),
-                TextColumn::make('slot')->badge()->color('gray')->formatStateUsing(fn ($s) => Sponsorship::SLOTS[$s]['label'] ?? $s),
+                TextColumn::make('slot')->badge()->color('gray')->formatStateUsing(fn ($state) => Sponsorship::SLOTS[$state]['label'] ?? $state),
                 TextColumn::make('starts_on')->label('Runs')->date('j M')->sortable()
                     ->description(fn (Sponsorship $r) => 'to '.$r->ends_on?->format('j M Y')),
-                TextColumn::make('status')->badge()->formatStateUsing(fn ($s) => self::STATUSES[$s] ?? $s)
-                    ->color(fn ($s) => match ($s) { 'active' => 'success', 'paused' => 'warning', default => 'gray' }),
+                TextColumn::make('status')->badge()->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state)
+                    ->color(fn ($state) => match ($state) {
+                        'active' => 'success', 'paused' => 'warning', default => 'gray'
+                    }),
                 TextColumn::make('impressions')->numeric()->sortable(),
                 TextColumn::make('clicks')->numeric()->sortable(),
                 TextColumn::make('ctr')->label('CTR')
                     ->state(fn (Sponsorship $r) => $r->impressions > 0 ? round($r->clicks / $r->impressions * 100, 2) : null)
-                    ->formatStateUsing(fn ($s) => $s === null ? '-' : number_format($s, 2).'%')
+                    ->formatStateUsing(fn ($state) => $state === null ? '-' : number_format($state, 2).'%')
                     ->placeholder('-'),
                 TextColumn::make('price')->money(fn (Sponsorship $r) => $r->currency)->sortable()->toggleable(),
             ])

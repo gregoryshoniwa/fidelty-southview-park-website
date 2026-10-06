@@ -79,7 +79,7 @@ class ServiceRequestResource extends Resource
                 TextEntry::make('partner.name')->label('Partner')->placeholder('Association'),
                 TextEntry::make('resident.user.name')->label('Resident'),
                 TextEntry::make('resident.stand.stand_number')->label('Stand')->placeholder('-'),
-                TextEntry::make('status')->badge()->formatStateUsing(fn ($s) => ServiceRequest::STATUSES[$s] ?? $s)->color(fn ($s) => self::statusColor($s)),
+                TextEntry::make('status')->badge()->formatStateUsing(fn ($state) => ServiceRequest::STATUSES[$state] ?? $state)->color(fn ($state) => self::statusColor($state)),
                 TextEntry::make('step')->state(fn (ServiceRequest $record) => self::stepLabel($record)),
                 TextEntry::make('created_at')->label('Opened')->dateTime(),
                 TextEntry::make('closed_at')->dateTime()->placeholder('-'),
@@ -90,8 +90,8 @@ class ServiceRequestResource extends Resource
                     ->columns(4)
                     ->schema([
                         TextEntry::make('created_at')->label('When')->dateTime('j M Y, H:i'),
-                        TextEntry::make('type')->badge()->color('gray')->formatStateUsing(fn ($s) => str($s)->replace('_', ' ')->ucfirst()),
-                        TextEntry::make('actor_type')->label('By')->formatStateUsing(fn ($s) => str($s)->replace('_', ' ')->ucfirst()),
+                        TextEntry::make('type')->badge()->color('gray')->formatStateUsing(fn ($state) => str($state)->replace('_', ' ')->ucfirst()),
+                        TextEntry::make('actor_type')->label('By')->formatStateUsing(fn ($state) => str($state)->replace('_', ' ')->ucfirst()),
                         TextEntry::make('payload')->label('Details')
                             ->state(fn (RequestEvent $record) => self::eventSummary($record))
                             ->placeholder('-'),
@@ -104,7 +104,7 @@ class ServiceRequestResource extends Resource
                     ->columns(3)
                     ->schema([
                         TextEntry::make('original_name')->label('File'),
-                        TextEntry::make('kind')->formatStateUsing(fn ($s) => Document::KINDS[$s] ?? $s),
+                        TextEntry::make('kind')->formatStateUsing(fn ($state) => Document::KINDS[$state] ?? $state),
                         TextEntry::make('created_at')->label('Uploaded')->dateTime('j M Y, H:i'),
                     ])
                     ->placeholder('No documents.'),
@@ -139,7 +139,7 @@ class ServiceRequestResource extends Resource
                 TextColumn::make('partner.name')->label('Partner')->placeholder('Association')->toggleable(),
                 TextColumn::make('resident.user.name')->label('Resident')->searchable(),
                 TextColumn::make('resident.stand.stand_number')->label('Stand')->searchable(),
-                TextColumn::make('status')->badge()->formatStateUsing(fn ($s) => ServiceRequest::STATUSES[$s] ?? $s)->color(fn ($s) => self::statusColor($s)),
+                TextColumn::make('status')->badge()->formatStateUsing(fn ($state) => ServiceRequest::STATUSES[$state] ?? $state)->color(fn ($state) => self::statusColor($state)),
                 TextColumn::make('step')->state(fn (ServiceRequest $r) => self::stepLabel($r))->limit(40),
                 TextColumn::make('updated_at')->label('Updated')->since()->sortable(),
             ])

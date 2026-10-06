@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,6 +60,30 @@ class ResidentResource extends Resource
         return str_repeat('•', max(0, strlen($phone) - 3)).substr($phone, -3);
     }
 
+    /** Residents whose stand or typed phone number the committee still has to check. */
+    public static function needsCheckQuery(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $q) => $q->where('verification_status', 'review')
+            ->orWhereHas('user', fn (Builder $u) => $u->whereNotNull('unconfirmed_phone')->whereNull('phone')));
+    }
+
+    public static function awaitingCommitteeCount(): int
+    {
+        return self::needsCheckQuery(Resident::query())->count();
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $n = self::awaitingCommitteeCount();
+
+        return $n ? (string) $n : null;
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Waiting for the committee to check a stand or phone number';
+    }
+
     /** Move a typed (unconfirmed) number to the confirmed phone, unless another account already holds it. */
     public static function confirmPhoneFor(?User $user): bool
     {
@@ -89,15 +114,17 @@ class ResidentResource extends Resource
                     ->state(fn (Resident $r) => $r->user?->phone ? self::maskPhone($r->user->phone) : ($r->user?->unconfirmed_phone ? self::maskPhone($r->user->unconfirmed_phone).' (unconfirmed)' : '-')),
                 TextColumn::make('stand.stand_number')->label('Stand')->searchable()->placeholder('-'),
                 TextColumn::make('verification_status')->label('Verification')->badge()
-                    ->formatStateUsing(fn ($s) => self::VERIFICATION[$s] ?? $s)
-                    ->color(fn ($s) => match ($s) {
+                    ->formatStateUsing(fn ($state) => self::VERIFICATION[$state] ?? $state)
+                    ->color(fn ($state) => match ($state) {
                         'verified' => 'success', 'pending', 'review' => 'warning', default => 'gray'
                     }),
                 TextColumn::make('verified_at')->dateTime('j M Y')->sortable()->placeholder('-'),
-                TextColumn::make('user.status')->label('Account')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
+                TextColumn::make('user.status')->label('Account')->badge()->color(fn ($state) => $state === 'active' ? 'success' : 'danger'),
                 TextColumn::make('created_at')->label('Registered')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Filter::make('needs_check')->label('Waiting for the committee')->toggle()
+                    ->query(fn (Builder $query) => self::needsCheckQuery($query)),
                 SelectFilter::make('verification_status')->label('Verification')->options(self::VERIFICATION),
                 SelectFilter::make('account')->label('Account')
                     ->options(['active' => 'Active', 'suspended' => 'Suspended'])

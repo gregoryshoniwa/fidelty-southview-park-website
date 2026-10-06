@@ -99,7 +99,9 @@ class PollResource extends Resource
             ->columns([
                 TextColumn::make('question')->searchable()->wrap()->limit(80),
                 TextColumn::make('state')->state(fn (Poll $r) => self::stateOf($r))->badge()
-                    ->color(fn ($s) => match ($s) { 'Open' => 'success', 'Scheduled' => 'info', default => 'gray' }),
+                    ->color(fn ($state) => match ($state) {
+                        'Open' => 'success', 'Scheduled' => 'info', default => 'gray'
+                    }),
                 TextColumn::make('votes_count')->label('Votes')->counts('votes'),
                 TextColumn::make('opens_at')->dateTime('j M Y')->sortable(),
                 TextColumn::make('closes_at')->dateTime('j M Y')->sortable(),

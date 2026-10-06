@@ -82,7 +82,7 @@ class PartnerResource extends Resource
             ->columns([
                 ImageColumn::make('logo_path')->label('')->disk(Uploads::DISK)->height(32),
                 TextColumn::make('name')->searchable()->sortable()->description(fn (Partner $r) => $r->website),
-                TextColumn::make('type')->badge()->color('gray')->formatStateUsing(fn ($s) => Partner::TYPES[$s] ?? $s),
+                TextColumn::make('type')->badge()->color('gray')->formatStateUsing(fn ($state) => Partner::TYPES[$state] ?? $state),
                 TextColumn::make('users_count')->label('Users')->counts('users'),
                 TextColumn::make('services_count')->label('Services')->counts('services'),
                 TextColumn::make('contact_email')->label('Email')->toggleable(isToggledHiddenByDefault: true),

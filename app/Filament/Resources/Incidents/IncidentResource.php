@@ -101,7 +101,7 @@ class IncidentResource extends Resource
             Section::make()->columns(3)->schema([
                 TextEntry::make('reference')->copyable(),
                 TextEntry::make('category')->badge()->color('gray'),
-                TextEntry::make('status')->badge()->formatStateUsing(fn ($s) => self::STATUSES[$s] ?? $s)->color(fn ($s) => self::statusColor($s)),
+                TextEntry::make('status')->badge()->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state)->color(fn ($state) => self::statusColor($state)),
                 TextEntry::make('resident.user.name')->label('Resident'),
                 TextEntry::make('resident.stand.stand_number')->label('Stand')->placeholder('-'),
                 TextEntry::make('partner.name')->label('Security partner')->placeholder('None'),
@@ -125,7 +125,7 @@ class IncidentResource extends Resource
                 TextColumn::make('resident.user.name')->label('Resident')->searchable()
                     ->description(fn (Incident $r) => $r->resident?->stand ? 'Stand '.$r->resident->stand->stand_number : null),
                 TextColumn::make('partner.name')->label('Partner')->placeholder('-')->toggleable(),
-                TextColumn::make('status')->badge()->formatStateUsing(fn ($s) => self::STATUSES[$s] ?? $s)->color(fn ($s) => self::statusColor($s)),
+                TextColumn::make('status')->badge()->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state)->color(fn ($state) => self::statusColor($state)),
                 TextColumn::make('created_at')->label('Reported')->since()->sortable(),
             ])
             ->filters([

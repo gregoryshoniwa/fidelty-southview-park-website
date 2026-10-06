@@ -6,12 +6,12 @@ use App\Filament\Concerns\FinanceOnly;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Models\Payment;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -56,7 +56,7 @@ class PaymentResource extends Resource
                 TextColumn::make('resident.user.name')->label('Resident')->placeholder('-')
                     ->description(fn (Payment $r) => $r->resident?->stand ? 'Stand '.$r->resident->stand->stand_number : null),
                 TextColumn::make('biller_code')->label('Biller')
-                    ->formatStateUsing(fn ($s) => Payment::BILLERS[$s]['label'] ?? $s)
+                    ->formatStateUsing(fn ($state) => Payment::BILLERS[$state]['label'] ?? $state)
                     ->description(fn (Payment $r) => $r->biller_reference),
                 TextColumn::make('amount')->numeric(decimalPlaces: 2)->alignEnd(),
                 TextColumn::make('platform_fee')->label('Fee')->numeric(decimalPlaces: 2)->alignEnd(),
@@ -64,8 +64,10 @@ class PaymentResource extends Resource
                 TextColumn::make('total')->numeric(decimalPlaces: 2)->alignEnd()->weight('medium')->sortable(),
                 TextColumn::make('currency'),
                 TextColumn::make('status')->badge()
-                    ->formatStateUsing(fn ($s) => self::STATUSES[$s] ?? ucfirst((string) $s))
-                    ->color(fn ($s) => match ($s) { 'paid' => 'success', 'failed' => 'danger', 'pending', 'initiated' => 'warning', default => 'gray' }),
+                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? ucfirst((string) $state))
+                    ->color(fn ($state) => match ($state) {
+                        'paid' => 'success', 'failed' => 'danger', 'pending', 'initiated' => 'warning', default => 'gray'
+                    }),
                 TextColumn::make('paid_at')->dateTime('j M Y, H:i')->sortable()->placeholder('-'),
                 TextColumn::make('gateway_reference')->label('Gateway ref')->toggleable(isToggledHiddenByDefault: true)->searchable(),
             ])

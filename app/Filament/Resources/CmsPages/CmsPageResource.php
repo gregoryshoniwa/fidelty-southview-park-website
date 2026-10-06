@@ -64,7 +64,7 @@ class CmsPageResource extends Resource
             ->defaultSort('title')
             ->columns([
                 TextColumn::make('title')->searchable()->sortable(),
-                TextColumn::make('slug')->searchable()->formatStateUsing(fn ($s) => '/'.$s)->color('gray'),
+                TextColumn::make('slug')->searchable()->formatStateUsing(fn ($state) => '/'.$state)->color('gray'),
                 IconColumn::make('published')->boolean(),
                 TextColumn::make('updated_at')->label('Updated')->since()->sortable(),
             ])

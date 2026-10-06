@@ -107,8 +107,8 @@ class LedgerEntryResource extends Resource
                 TextColumn::make('id')->label('#')->sortable(),
                 TextColumn::make('entry_date')->label('Date')->date('j M Y')->sortable(),
                 TextColumn::make('type')->badge()
-                    ->formatStateUsing(fn ($s) => LedgerEntry::TYPES[$s] ?? $s)
-                    ->color(fn ($s) => match ($s) {
+                    ->formatStateUsing(fn ($state) => LedgerEntry::TYPES[$state] ?? $state)
+                    ->color(fn ($state) => match ($state) {
                         'commission', 'fee', 'advertising' => 'success',
                         'expense', 'payout' => 'danger',
                         default => 'gray',
@@ -124,12 +124,12 @@ class LedgerEntryResource extends Resource
                 TextColumn::make('currency'),
                 TextColumn::make('source')->badge()->color('gray')->toggleable(),
                 TextColumn::make('status')->badge()
-                    ->formatStateUsing(fn ($s) => self::STATUSES[$s] ?? $s)
-                    ->color(fn ($s) => $s === 'posted' ? 'success' : 'warning'),
+                    ->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state)
+                    ->color(fn ($state) => $state === 'posted' ? 'success' : 'warning'),
                 TextColumn::make('creator.name')->label('Created by')->placeholder('System')->toggleable(),
                 TextColumn::make('approver.name')->label('Approved by')->placeholder('-')->toggleable()
                     ->description(fn (LedgerEntry $r) => $r->approved_at?->format('j M Y')),
-                TextColumn::make('reverses_id')->label('Reverses')->formatStateUsing(fn ($s) => $s ? '#'.$s : null)->placeholder('-')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('reverses_id')->label('Reverses')->formatStateUsing(fn ($state) => $state ? '#'.$state : null)->placeholder('-')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('type')->options(LedgerEntry::TYPES)->multiple(),

@@ -26,7 +26,7 @@ class LatestInboxThreads extends TableWidget
             ->columns([
                 TextColumn::make('reference'),
                 TextColumn::make('subject')->limit(60),
-                TextColumn::make('category')->badge()->color('gray')->formatStateUsing(fn ($s) => Thread::CATEGORIES[$s] ?? $s),
+                TextColumn::make('category')->badge()->color('gray')->formatStateUsing(fn ($state) => Thread::CATEGORIES[$state] ?? $state),
                 TextColumn::make('resident.user.name')->label('Resident')
                     ->description(fn (Thread $r) => $r->resident?->stand ? 'Stand '.$r->resident->stand->stand_number : null),
                 TextColumn::make('last_message_at')->label('Last message')->since(),

@@ -8,6 +8,7 @@ use App\Filament\Resources\CommunityPages\Pages\ListCommunityPages;
 use App\Filament\Resources\CommunityPages\RelationManagers\PostsRelationManager;
 use App\Filament\Support\Uploads;
 use App\Models\CommunityPage;
+use App\Models\Partner;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -60,7 +61,7 @@ class CommunityPageResource extends Resource
                 TextInput::make('phone')->tel()->maxLength(20),
                 TextInput::make('address')->maxLength(255),
                 TagsInput::make('hours')->placeholder('e.g. Mon-Fri 08:00-17:00')->reorderable(),
-                Select::make('partner_id')->label('Linked partner')->options(fn () => \App\Models\Partner::orderBy('name')->pluck('name', 'id'))->searchable(),
+                Select::make('partner_id')->label('Linked partner')->options(fn () => Partner::orderBy('name')->pluck('name', 'id'))->searchable(),
                 Select::make('owner_user_id')->label('Owner')->relationship('owner', 'name')->searchable()
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name.' ('.$record->phone.')'),
                 Toggle::make('verified')->label('Partner (managed by the organisation)'),
@@ -76,12 +77,12 @@ class CommunityPageResource extends Resource
             ->columns([
                 ImageColumn::make('logo_path')->label('')->disk(Uploads::DISK)->circular()->height(32),
                 TextColumn::make('name')->searchable()->sortable()->description(fn (CommunityPage $r) => $r->tagline),
-                TextColumn::make('type')->badge()->color('gray')->formatStateUsing(fn ($s) => CommunityPage::TYPES[$s] ?? $s),
+                TextColumn::make('type')->badge()->color('gray')->formatStateUsing(fn ($state) => CommunityPage::TYPES[$state] ?? $state),
                 IconColumn::make('verified')->label('Partner')->boolean(),
                 TextColumn::make('posts_count')->label('Posts')->counts('posts'),
                 TextColumn::make('reported_posts')->label('Reported posts')
                     ->state(fn (CommunityPage $r) => $r->posts()->where('reported_count', '>', 0)->whereNull('hidden_at')->count())
-                    ->badge()->color(fn ($s) => $s > 0 ? 'danger' : 'gray'),
+                    ->badge()->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
                 IconColumn::make('active')->boolean(),
             ])
             ->filters([

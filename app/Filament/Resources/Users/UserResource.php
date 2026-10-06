@@ -123,7 +123,7 @@ class UserResource extends Resource
                 TextColumn::make('roles.name')->label('Roles')->badge()
                     ->state(fn (User $r) => $r->roles->pluck('name')->intersect(User::COMMITTEE_ROLES)->values()->all()),
                 IconColumn::make('mfa')->label('2FA')->boolean()->state(fn (User $r) => filled($r->app_authentication_secret)),
-                TextColumn::make('status')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
+                TextColumn::make('status')->badge()->color(fn ($state) => $state === 'active' ? 'success' : 'danger'),
                 TextColumn::make('last_login_at')->label('Last login')->since()->placeholder('Never'),
             ])
             ->filters([

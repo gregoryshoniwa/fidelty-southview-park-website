@@ -25,6 +25,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -42,7 +43,7 @@ class ServiceResource extends Resource
 
     public const FEE_TYPES = ['none' => 'Free', 'flat' => 'Flat fee', 'percent' => 'Percentage', 'partner_paid' => 'Paid by partner'];
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
@@ -93,7 +94,7 @@ class ServiceResource extends Resource
             ->columns([
                 TextColumn::make('name')->searchable()->description(fn (Service $r) => '/services/'.$r->slug),
                 TextColumn::make('partner.name')->label('Partner')->placeholder('Association'),
-                TextColumn::make('phase')->badge()->color('gray')->formatStateUsing(fn ($s) => 'Phase '.$s)->sortable(),
+                TextColumn::make('phase')->badge()->color('gray')->formatStateUsing(fn ($state) => 'Phase '.$state)->sortable(),
                 TextColumn::make('fee')->label('Fee')->state(fn (Service $r) => $r->feeLabel()),
                 TextColumn::make('commission_percent')->label('Commission')->suffix('%')->toggleable(),
                 ToggleColumn::make('enabled'),

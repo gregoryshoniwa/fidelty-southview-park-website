@@ -74,10 +74,10 @@ class AuditLogResource extends Resource
             ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('created_at')->label('When')->dateTime('j M Y, H:i:s')->sortable(),
-                TextColumn::make('action')->badge()->color(fn ($s) => str_contains((string) $s, 'deleted') ? 'danger' : 'gray')->searchable(),
+                TextColumn::make('action')->badge()->color(fn ($state) => str_contains((string) $state, 'deleted') ? 'danger' : 'gray')->searchable(),
                 TextColumn::make('actor.name')->label('Actor')->placeholder(fn (AuditLog $r) => ucfirst((string) $r->actor_type))->searchable(),
                 TextColumn::make('subject_type')->label('Subject')
-                    ->formatStateUsing(fn ($s, AuditLog $r) => class_basename((string) $s).' #'.$r->subject_id)->placeholder('-'),
+                    ->formatStateUsing(fn ($state, AuditLog $r) => class_basename((string) $state).' #'.$r->subject_id)->placeholder('-'),
                 TextColumn::make('ip')->label('IP')->placeholder('-')->toggleable(),
             ])
             ->filters([

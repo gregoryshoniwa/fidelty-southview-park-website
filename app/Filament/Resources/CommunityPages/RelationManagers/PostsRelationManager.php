@@ -34,7 +34,7 @@ class PostsRelationManager extends RelationManager
                 ImageColumn::make('image_path')->label('')->disk(Uploads::DISK)->height(40),
                 TextColumn::make('body')->limit(120)->wrap()->searchable(),
                 TextColumn::make('reported_count')->label('Reports')->sortable()->badge()
-                    ->color(fn ($s) => $s > 0 ? 'danger' : 'gray'),
+                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
                 TextColumn::make('published_at')->dateTime('j M Y, H:i')->sortable()->placeholder('-'),
                 TextColumn::make('hidden_at')->label('Hidden')->since()->placeholder('Visible')
                     ->description(fn (PagePost $r) => $r->hidden_reason),

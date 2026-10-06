@@ -45,8 +45,8 @@ class UsersRelationManager extends RelationManager
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('phone')->searchable(),
                 TextColumn::make('email')->placeholder('-'),
-                TextColumn::make('role')->label('Partner role')->badge()->formatStateUsing(fn ($s) => self::ROLES[$s] ?? $s),
-                TextColumn::make('status')->badge()->color(fn ($s) => $s === 'active' ? 'success' : 'danger'),
+                TextColumn::make('role')->label('Partner role')->badge()->formatStateUsing(fn ($state) => self::ROLES[$state] ?? $state),
+                TextColumn::make('status')->badge()->color(fn ($state) => $state === 'active' ? 'success' : 'danger'),
                 TextColumn::make('last_login_at')->label('Last login')->since()->placeholder('Never'),
             ])
             ->headerActions([

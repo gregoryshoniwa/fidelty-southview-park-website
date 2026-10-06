@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\Residents\ResidentResource;
 use App\Filament\Resources\ServiceRequests\ServiceRequestResource;
 use App\Filament\Resources\Sponsorships\SponsorshipResource;
 use App\Filament\Resources\Threads\ThreadResource;
@@ -24,7 +25,7 @@ class CommitteeStats extends StatsOverviewWidget
         $open = Thread::whereNull('partner_id')->where('status', 'open')->count();
         $unassigned = Thread::whereNull('partner_id')->where('status', 'open')->whereNull('assigned_to')->count();
         $verified = Resident::where('verification_status', 'verified')->count();
-        $pending = Resident::where('verification_status', 'pending')->count();
+        $toCheck = ResidentResource::awaitingCommitteeCount();
         $requests = ServiceRequest::whereNotIn('status', ['closed', 'cancelled'])->count();
         $waiting = ServiceRequest::where('status', 'waiting_partner')->count();
         $ads = Sponsorship::where('status', 'active')->whereDate('starts_on', '<=', today())->whereDate('ends_on', '>=', today())->count();
@@ -36,8 +37,10 @@ class CommitteeStats extends StatsOverviewWidget
                 ->color($open ? 'warning' : 'success')
                 ->url(ThreadResource::getUrl('index')),
             Stat::make('Verified residents', number_format($verified))
-                ->description($pending ? $pending.' pending verification' : 'None pending')
-                ->icon(Heroicon::OutlinedShieldCheck),
+                ->description($toCheck ? $toCheck.' waiting for the committee to check' : 'Nothing waiting for the committee')
+                ->icon(Heroicon::OutlinedShieldCheck)
+                ->color($toCheck ? 'warning' : 'success')
+                ->url(ResidentResource::getUrl('index', ['filters' => ['needs_check' => ['isActive' => true]]])),
             Stat::make('Open service requests', number_format($requests))
                 ->description($waiting.' with partners')
                 ->icon(Heroicon::OutlinedClipboardDocumentCheck)
