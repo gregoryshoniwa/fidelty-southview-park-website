@@ -89,6 +89,8 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
             ])
             ->maxContentWidth(Width::Full)
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldKeyBindingSuffix()
             ->sidebarCollapsibleOnDesktop()
             ->unsavedChangesAlerts()
             ->navigationGroups([
