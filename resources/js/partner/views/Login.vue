@@ -77,7 +77,10 @@ function restart() {
 
 <template>
     <div class="flex min-h-dvh flex-col bg-sand lg:flex-row">
-        <section class="flex flex-col justify-between gap-8 bg-forest-900 px-6 py-8 text-cream lg:w-[44%] lg:px-12 lg:py-12">
+        <section class="relative isolate flex flex-col justify-between gap-8 overflow-hidden bg-forest-900 px-6 py-8 text-cream lg:w-[44%] lg:px-12 lg:py-12">
+            <img src="/images/hero-deed-1280.webp" srcset="/images/hero-deed-768.webp 768w, /images/hero-deed-1280.webp 1280w, /images/hero-deed-1376.webp 1376w"
+                 sizes="(min-width: 1024px) 44vw, 100vw" alt="" class="absolute inset-0 -z-10 size-full object-cover" decoding="async" fetchpriority="high">
+            <div class="absolute inset-0 -z-10 bg-gradient-to-t from-forest-900 via-forest-900/75 to-forest-900/45 lg:bg-gradient-to-tr lg:from-forest-900 lg:via-forest-900/70 lg:to-forest-900/25" aria-hidden="true"></div>
             <div class="flex items-center gap-3">
                 <Logo />
                 <div>
