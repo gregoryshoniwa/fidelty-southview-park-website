@@ -33,7 +33,7 @@ async function open() {
         <ol class="card divide-y divide-line">
             <li v-for="(s, i) in steps" :key="s" class="flex items-center gap-3 p-4"><span class="flex size-7 items-center justify-center rounded-full border-[1.5px] border-line text-xs font-extrabold text-muted">{{ i + 1 }}</span><span class="font-semibold text-forest-900">{{ s }}</span></li>
         </ol>
-        <div class="card p-5 text-sm text-muted"><p class="font-bold text-forest-900">You will need</p><ul class="mt-2 flex flex-col gap-1.5"><li v-for="d in ['Agreement of Sale', 'National ID, both sides', 'Proof of residence', 'Later: council rates clearance certificate']" :key="d" class="flex gap-2"><Check class="size-4 text-forest-700" />{{ d }}</li></ul></div>
+        <div class="card p-5 text-sm text-muted"><p class="font-bold text-forest-900">You will need</p><ul class="mt-2 flex flex-col gap-1.5"><li v-for="d in ['Agreement of Sale', 'National ID or passport', 'Proof of residence']" :key="d" class="flex gap-2"><Check class="size-4 text-forest-700" />{{ d }}</li></ul></div>
         <fieldset class="card flex flex-col gap-3 p-5">
             <legend class="sr-only">Your law firm</legend>
             <p class="font-bold text-forest-900">Which law firm is handling your deed?</p>

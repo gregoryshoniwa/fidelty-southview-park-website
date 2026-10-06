@@ -12,7 +12,7 @@ import Thread from '@/shared/Thread.vue';
 const route = useRoute(); const paymentsLive = inject('paymentsLive');
 const req = ref(null); const thread = ref(null); const sending = ref(false);
 const upOpen = ref(false); const kind = ref('agreement_of_sale'); const file = ref(null); const consent = ref(false); const uploading = ref(false); const upErr = ref('');
-const kinds = { agreement_of_sale: 'Agreement of Sale', national_id: 'National ID (both sides)', proof_of_residence: 'Proof of residence', council_clearance: 'Council clearance certificate', bank_statement: 'Bank statement or payslip', other: 'Other' };
+const kinds = { agreement_of_sale: 'Agreement of Sale', national_id: 'National ID', passport: 'Passport', proof_of_residence: 'Proof of residence', bank_statement: 'Bank statement or payslip', other: 'Other' };
 
 async function load() {
     req.value = (await api('/requests/' + route.params.ref)).data;
@@ -76,7 +76,7 @@ function eventText(e) {
                         <button class="text-xs font-bold text-forest-700 hover:underline" @click="download('/documents/' + d.id, d.name)">View</button>
                     </li>
                 </ul>
-                <p v-else class="text-sm text-muted">No documents yet. {{ isDeed ? 'Upload your Agreement of Sale, ID and proof of residence.' : '' }}</p>
+                <p v-else class="text-sm text-muted">No documents yet. {{ isDeed ? 'Upload your Agreement of Sale, national ID or passport, and proof of residence.' : '' }}</p>
                 <h3 class="eyebrow mb-2 mt-6 text-muted">History</h3>
                 <ul class="flex flex-col gap-2 text-sm"><li v-for="(e, i) in [...req.events].reverse()" :key="i" class="flex justify-between gap-3"><span>{{ eventText(e) }}</span><span class="shrink-0 text-xs text-muted">{{ fmt.ago(e.at) }}</span></li></ul>
             </section>

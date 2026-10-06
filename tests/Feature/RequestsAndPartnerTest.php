@@ -44,6 +44,15 @@ class RequestsAndPartnerTest extends TestCase
         $this->actingAs($u)->post("/api/requests/$ref/documents", ['kind' => 'other', 'file' => UploadedFile::fake()->create('big.pdf', 9000, 'application/pdf'), 'consent' => '1'], ['Accept' => 'application/json'])->assertStatus(422);
     }
 
+    public function test_passport_can_be_uploaded_but_council_clearance_cannot(): void
+    {
+        Storage::fake('local');
+        $u = $this->resident('1114');
+        $ref = $this->openDeed($u);
+        $this->actingAs($u)->post("/api/requests/$ref/documents", ['kind' => 'passport', 'file' => UploadedFile::fake()->image('passport.jpg'), 'consent' => '1'], ['Accept' => 'application/json'])->assertSuccessful();
+        $this->actingAs($u)->post("/api/requests/$ref/documents", ['kind' => 'council_clearance', 'file' => UploadedFile::fake()->create('c.pdf', 10, 'application/pdf'), 'consent' => '1'], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('kind');
+    }
+
     public function test_residents_cannot_see_each_others_requests_or_documents(): void
     {
         Storage::fake('local');

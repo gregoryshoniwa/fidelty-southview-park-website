@@ -74,7 +74,7 @@ class RequestController extends Controller
     {
         $this->own($request, $serviceRequest);
         $data = $request->validate([
-            'kind' => ['required', Rule::in(array_keys(Document::KINDS))],
+            'kind' => ['required', Rule::in(Document::UPLOAD_KINDS)],
             'file' => ['required', 'file', 'max:'.config('fspra.documents.max_kb'), 'mimes:'.implode(',', config('fspra.documents.mimes'))],
             'consent' => ['accepted'],
         ]);

@@ -19,12 +19,16 @@ class Document extends Model
     public const KINDS = [
         'agreement_of_sale' => 'Agreement of Sale',
         'national_id' => 'National ID',
+        'passport' => 'Passport',
         'proof_of_residence' => 'Proof of residence',
-        'council_clearance' => 'Council clearance certificate',
+        'council_clearance' => 'Council clearance certificate', // no longer asked for; kept to label older uploads
         'bank_statement' => 'Bank statement or payslip',
         'receipt' => 'Receipt',
         'other' => 'Other',
     ];
+
+    /** What residents can choose when uploading. */
+    public const UPLOAD_KINDS = ['agreement_of_sale', 'national_id', 'passport', 'proof_of_residence', 'bank_statement', 'receipt', 'other'];
 
     public function uniqueIds(): array
     {
