@@ -20,7 +20,7 @@ class RequestsAndPartnerTest extends TestCase
 
     private function openDeed($u): string
     {
-        return $this->actingAs($u)->postJson('/api/services/title-deed-tracker/requests', [])->assertCreated()->json('reference');
+        return $this->actingAs($u)->postJson('/api/services/title-deed-tracker/requests', ['partner' => 'marufu-attorneys'])->assertCreated()->json('reference');
     }
 
     public function test_resident_opens_deed_file_and_uploads_document(): void
@@ -32,7 +32,7 @@ class RequestsAndPartnerTest extends TestCase
         $this->actingAs($u)->post("/api/requests/$ref/documents", ['kind' => 'agreement_of_sale', 'file' => UploadedFile::fake()->create('a.pdf', 200, 'application/pdf'), 'consent' => '1'], ['Accept' => 'application/json'])->assertCreated();
         $this->actingAs($u)->getJson("/api/requests/$ref")->assertOk()->assertJsonCount(1, 'data.documents')->assertJsonPath('data.steps.0', 'Documents received');
         // second open returns the existing file, never a duplicate
-        $this->actingAs($u)->postJson('/api/services/title-deed-tracker/requests', [])->assertOk()->assertJson(['existing' => true, 'reference' => $ref]);
+        $this->actingAs($u)->postJson('/api/services/title-deed-tracker/requests', ['partner' => 'marufu-attorneys'])->assertOk()->assertJson(['existing' => true, 'reference' => $ref]);
     }
 
     public function test_upload_rejects_dangerous_files(): void
@@ -140,5 +140,20 @@ class RequestsAndPartnerTest extends TestCase
         $this->actingAs($staff)->postJson('/api/partner/broadcasts', ['body' => 'Registry closed Friday.', 'audience' => 'open_requests'])->assertCreated();
         $this->assertTrue(InAppNotification::where('user_id', $a->id)->where('body', 'Registry closed Friday.')->exists());
         $this->assertFalse(InAppNotification::where('user_id', $b->id)->exists());
+    }
+
+    public function test_resident_chooses_their_law_firm_and_only_that_firm_sees_the_deed(): void
+    {
+        $u = $this->resident('1120');
+        $this->actingAs($u)->getJson('/api/law-firms')->assertOk()->assertJsonCount(5, 'data')
+            ->assertJsonFragment(['slug' => 'diza-attorneys', 'email' => 'info@dizaattorneys.co.zw']);
+        $this->postJson('/api/services/title-deed-tracker/requests', [])->assertStatus(422)->assertJsonValidationErrors('partner');
+        $this->postJson('/api/services/title-deed-tracker/requests', ['partner' => 'tn-cybertech-bank'])->assertStatus(422);
+
+        $ref = $this->postJson('/api/services/title-deed-tracker/requests', ['partner' => 'diza-attorneys'])->assertCreated()->json('reference');
+        $this->assertSame('diza-attorneys', ServiceRequest::where('reference', $ref)->first()->partner->slug);
+
+        $this->actingAs($this->partnerUser('diza-attorneys'))->getJson('/api/partner/requests')->assertOk()->assertJsonFragment(['reference' => $ref]);
+        $this->actingAs($this->partnerUser('marufu-attorneys'))->getJson('/api/partner/requests')->assertOk()->assertJsonMissing(['reference' => $ref]);
     }
 }

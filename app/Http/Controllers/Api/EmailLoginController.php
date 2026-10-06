@@ -36,7 +36,10 @@ class EmailLoginController extends Controller
             'expires_at' => now()->addMinutes(15), 'ip' => $request->ip(), 'created_at' => now(), 'updated_at' => now(),
         ]);
         $url = url('/app/login/email?token='.$token);
-        Mail::to($email)->send(new MagicLinkMail($url, ! $user));
+        // Demo addresses use the reserved .test domain: locally the link is kept in the cache instead of emailed.
+        if (! (app()->environment('local') && str_ends_with($email, '.test'))) {
+            Mail::to($email)->send(new MagicLinkMail($url, ! $user));
+        }
         if (app()->environment('local', 'testing')) {
             cache()->put('magic:last:'.$email, $token, 900);
         }

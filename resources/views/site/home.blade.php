@@ -18,7 +18,7 @@
         ],
         [
             'img' => 'hero-deed', 'fallback' => 'jpg', 'label' => 'Keys and title deed',
-            'eyebrow' => 'Title deeds with Marufu Attorneys',
+            'eyebrow' => 'Title deeds with five appointed law firms',
             'title' => 'Your title deed,<br><span class="text-gold-500">step by step.</span>',
             'lead' => 'Open your deed file once, upload your Agreement of Sale and ID, and follow all six steps from your phone. Message the lawyers on your file directly.',
             'primary' => ['/app/deed', 'Open my deed file'], 'secondary' => ['/services/title-deed-tracker', 'How it works'],
@@ -67,7 +67,7 @@
         </div>
         <ul class="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-cream/80">
             <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Free to join</li>
-            <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Backed by Fidelity Life, Marufu Attorneys and TN CyberTech Bank</li>
+            <li class="flex items-center gap-1.5"><x-lucide name="check" class="size-4 text-gold-500" />Backed by Fidelity Life, five conveyancing law firms and TN CyberTech Bank</li>
         </ul>
         <div class="mt-6 flex items-center gap-2" x-data="heroDots" role="group" aria-label="Choose a slide">
             @foreach ($slides as $i => $sl)

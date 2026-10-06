@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\Document;
+use App\Models\Partner;
 use App\Models\Resident;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -23,13 +24,14 @@ class RequestService
 
     public function __construct(private NotificationService $notify, private MessagingService $messaging) {}
 
-    public function open(Resident $resident, Service $service, array $data = []): ServiceRequest
+    public function open(Resident $resident, Service $service, array $data = [], ?Partner $partner = null): ServiceRequest
     {
+        $partner ??= $service->partner;
         $req = ServiceRequest::create([
             'reference' => Reference::next(self::PREFIX[$service->slug] ?? 'REQ', 'service_requests'),
             'resident_id' => $resident->id,
             'service_id' => $service->id,
-            'partner_id' => $service->partner_id,
+            'partner_id' => $partner?->id,
             'status' => 'waiting_partner',
             'step' => 1,
             'data' => $data ?: null,
@@ -37,8 +39,8 @@ class RequestService
         $req->events()->create(['actor_type' => 'resident', 'actor_id' => $resident->user_id, 'type' => 'opened', 'payload' => ['service' => $service->name]]);
         AuditLog::record('request.opened', $req);
 
-        if ($service->partner) {
-            foreach ($service->partner->users as $staff) {
+        if ($partner) {
+            foreach ($partner->users as $staff) {
                 $this->notify->notify($staff, 'New request '.$req->reference, $service->name, '/partner/requests/'.$req->reference, 'request', false);
             }
         }

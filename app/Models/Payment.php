@@ -18,7 +18,7 @@ class Payment extends Model
         'council' => ['label' => 'City of Harare rates', 'reference' => 'Council account number', 'fee' => 0.50, 'commission_percent' => 0],
         'zesa' => ['label' => 'ZESA prepaid token', 'reference' => 'Meter number', 'fee' => 0, 'commission_percent' => 1.5],
         'airtime' => ['label' => 'Airtime or data', 'reference' => 'Phone number', 'fee' => 0, 'commission_percent' => 4],
-        'legal' => ['label' => 'Marufu Attorneys, deed fees', 'reference' => 'Deed file reference', 'fee' => 1.00, 'commission_percent' => 0],
+        'legal' => ['label' => 'Law firm deed fees', 'reference' => 'Deed file reference', 'fee' => 1.00, 'commission_percent' => 0],
         'school' => ['label' => 'Partner school fees', 'reference' => 'Learner number', 'fee' => 0, 'commission_percent' => 1.5],
         'dstv' => ['label' => 'DStv subscription', 'reference' => 'Smartcard number', 'fee' => 0, 'commission_percent' => 2],
         'merchant' => ['label' => 'Other merchant', 'reference' => 'Merchant code', 'fee' => 0, 'commission_percent' => 0],

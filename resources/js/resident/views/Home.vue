@@ -18,7 +18,7 @@ const unreadThreads = computed(() => threads.value.reduce((a, t) => a + t.unread
 const tiles = [
     { to: '/agreement', icon: FileText, title: 'My Agreement', text: 'Download PDF · payment history', tone: 'bg-forest-100 text-forest-700' },
     { to: '/pay', icon: CreditCard, title: 'Pay bills', text: 'Council · ZESA · airtime', tone: 'bg-forest-100 text-forest-700' },
-    { to: '/deed', icon: Landmark, title: 'Deed tracker', text: 'With Marufu Attorneys', tone: 'bg-gold-100 text-gold-600' },
+    { to: '/deed', icon: Landmark, title: 'Deed tracker', text: 'With your law firm', tone: 'bg-gold-100 text-gold-600' },
     { to: '/inbox/new', icon: MessageSquare, title: 'Write to us', text: 'Private, with a reference', tone: 'bg-forest-100 text-forest-700' },
 ];
 </script>

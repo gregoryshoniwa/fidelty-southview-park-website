@@ -59,6 +59,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::post('/fidelity/agreement/replace', [Api\FidelityController::class, 'replace'])->middleware('throttle:5,60');
 
         Route::get('/requests', [Api\RequestController::class, 'index']);
+        Route::get('/law-firms', [Api\RequestController::class, 'lawFirms']);
         Route::post('/services/{service}/requests', [Api\RequestController::class, 'store'])->middleware('throttle:10,60');
         Route::get('/requests/{serviceRequest}', [Api\RequestController::class, 'show']);
         Route::post('/requests/{serviceRequest}/documents', [Api\RequestController::class, 'upload'])->middleware('throttle:30,60');

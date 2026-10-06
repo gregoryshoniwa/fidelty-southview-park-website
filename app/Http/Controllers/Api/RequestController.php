@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Partner;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Services\MessagingService;
@@ -27,6 +28,11 @@ class RequestController extends Controller
     {
         abort_unless($service->enabled && $service->partner_id, 422, 'This service is not open for requests yet.');
         $rules = ['notes' => ['nullable', 'string', 'max:1000']];
+        $isDeed = $service->slug === 'title-deed-tracker';
+        if ($isDeed) {
+            // Several law firms process Southview deeds; the resident picks the one on their file.
+            $rules['partner'] = ['required', 'string', Rule::exists('partners', 'slug')->where('type', 'law_firm')->where('active', true)];
+        }
         foreach ($service->form_schema ?? [] as $field) {
             $rules['fields.'.$field['name']] = array_merge($field['required'] ?? false ? ['required'] : ['nullable'], ['string', 'max:500']);
         }
@@ -42,9 +48,18 @@ class RequestController extends Controller
         if (! empty($data['notes'])) {
             $clean['notes'] = strip_tags($data['notes']);
         }
-        $req = $this->requests->open($resident, $service, $clean);
+        $firm = $isDeed ? Partner::where('slug', $data['partner'])->first() : null;
+        $req = $this->requests->open($resident, $service, $clean, $firm);
 
         return response()->json(['reference' => $req->reference], 201);
+    }
+
+    /** Law firms processing Southview Park title deeds, for the resident to choose theirs. */
+    public function lawFirms()
+    {
+        return response()->json(['data' => Partner::where('type', 'law_firm')->where('active', true)->orderBy('name')->get()
+            ->map(fn (Partner $p) => ['slug' => $p->slug, 'name' => $p->name, 'logo' => $p->logoUrl(), 'phone' => $p->contact_phone,
+                'email' => $p->contact_email, 'website' => $p->website, 'address' => $p->address])]);
     }
 
     public function show(Request $request, ServiceRequest $serviceRequest)
