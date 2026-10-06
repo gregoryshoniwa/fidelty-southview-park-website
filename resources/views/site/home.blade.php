@@ -78,21 +78,6 @@
     </div>
 </section>
 
-{{-- COUNTERS --}}
-<section class="bg-forest-950 text-cream" aria-label="What we have done">
-    <div class="wrap py-10">
-        <p class="eyebrow mb-4 flex items-center gap-2 text-gold-400"><span class="size-2 rounded-full bg-gold-500 ring-4 ring-gold-500/25"></span>Counting since launch day</p>
-        <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
-            @foreach ([[$stats['verified'], 'Residents verified'], [$stats['agreements'], 'Agreement of Sale requests'], [$stats['deeds'], 'Title deed files opened'], [$stats['answered_pct'] !== null ? $stats['answered_pct'].'%' : 'New', 'Questions answered within 48 hours']] as [$n, $label])
-                <div class="flex flex-col gap-1 rounded-[12px] border border-white/10 bg-white/[0.06] px-5 py-4">
-                    <dt class="order-2 text-sm font-semibold text-cream/75">{{ $label }}</dt>
-                    <dd class="order-1 font-serif text-4xl font-bold text-gold-400" data-count="{{ is_numeric($n) ? $n : '' }}">{{ $n }}</dd>
-                </div>
-            @endforeach
-        </dl>
-    </div>
-</section>
-
 {{-- SERVICES --}}
 <div class="bg-mint">
 <section id="services" class="wrap py-20 lg:py-24" aria-labelledby="services-title">
@@ -133,11 +118,19 @@
 
 {{-- COMMUNITY --}}
 <section class="wrap py-20 lg:py-24" aria-labelledby="community-title">
-    <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
-        <x-section-head eyebrow="Community" title="Businesses, churches and schools nearby" lead="Follow a page, buy from a neighbour, find a school. Local businesses can sponsor a tile here." id="community-title" />
-        <a href="{{ route('community') }}" class="btn btn-outline">Open the directory</a>
+    <div class="grid items-center gap-8 lg:grid-cols-[1fr_340px] lg:gap-12">
+        <div class="flex flex-col items-start gap-6">
+            <x-section-head eyebrow="Community" title="Businesses, churches and schools nearby" lead="Follow a page, buy from a neighbour, find a school. Local businesses can sponsor a tile here." id="community-title" />
+            <a href="{{ route('community') }}" class="btn btn-outline">Open the directory</a>
+        </div>
+        <a href="{{ route('advertise') }}" class="reveal flex flex-col items-center justify-center gap-3 rounded-[12px] bg-forest-900 p-6 text-center text-cream">
+            <span class="font-serif text-2xl font-bold text-gold-500">Advertise here</span>
+            <span class="text-sm leading-relaxed text-cream/80">Sponsored tiles, banners and notices that reach every verified household.</span>
+            <span class="btn btn-gold btn-sm mt-1">See rates</span>
+        </a>
     </div>
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    @if ($pages->isNotEmpty())
+    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ($pages as $p)
             <a href="{{ route('community.page', $p) }}" class="card card-hover reveal flex flex-col overflow-hidden">
                 <img src="{{ $p->cover_path ? asset($p->cover_path) : '/images/covers/'.$p->type.'.webp' }}" alt="" width="400" height="240" loading="lazy" decoding="async" class="aspect-[5/3] w-full object-cover">
@@ -148,16 +141,12 @@
                 </span>
             </a>
         @endforeach
-        <a href="{{ route('advertise') }}" class="reveal flex flex-col items-center justify-center gap-3 rounded-[12px] bg-forest-900 p-6 text-center text-cream">
-            <span class="font-serif text-2xl font-bold text-gold-500">Advertise here</span>
-            <span class="text-sm leading-relaxed text-cream/80">Sponsored tiles, banners and notices that reach every verified household.</span>
-            <span class="btn btn-gold btn-sm mt-1">See rates</span>
-        </a>
     </div>
+    @endif
 </section>
 
 {{-- NOTICES --}}
-<section id="notices" class="bg-mint" aria-labelledby="notices-title">
+<section id="notices" class="border-t border-[#187742] bg-mint" aria-labelledby="notices-title">
     <div class="wrap py-20 lg:py-24">
         <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
             <x-section-head eyebrow="Notice board" title="One official channel. Calm, dated, signed." lead="No group chats. Official notices only, each dated and signed by a committee role. Something to raise? Write to the committee privately." id="notices-title" />
@@ -183,29 +172,19 @@
     </div>
 </section>
 
-{{-- GOVERNANCE --}}
-@php $constitution = \App\Models\CmsPage::live('constitution'); @endphp
-<section class="bg-forest-900 text-cream" aria-labelledby="gov-title">
-    <div class="wrap grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-24">
-        <div class="flex flex-col gap-5">
-            <x-section-head eyebrow="About the association" title="Run by rules you can read." :lead="($constitution ? 'The constitution, the minutes' : 'The minutes').' of every meeting and the committee\'s term are public. Payments out need two signatories. The accounts are reviewed independently every year.'" dark id="gov-title" />
-            <ul class="flex flex-col gap-2.5 text-[15px]">
-                <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Fees printed before every payment</li>
-                <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Minutes published within 7 days</li>
-                <li class="flex items-center gap-2.5"><x-lucide name="check" class="size-4 text-gold-500" />Founding committee term ends after 12 months, then you vote</li>
-            </ul>
-            <div class="flex flex-wrap gap-3">@if ($constitution)<a href="{{ route('constitution') }}" class="btn btn-gold">Read the constitution</a>@endif<a href="{{ route('about') }}#minutes" @class(['btn', 'btn-ghost' => $constitution, 'btn-gold' => ! $constitution])>Latest minutes</a></div>
+{{-- CTA --}}
+<section class="bg-gold-500 text-forest-900">
+    <div class="wrap flex flex-col items-start justify-between gap-6 py-14 lg:flex-row lg:items-center">
+        <div class="max-w-2xl">
+            <h2 class="font-serif text-3xl font-bold sm:text-4xl">Stronger together. A better community.</h2>
+            <p class="mt-2 text-[17px] text-forest-900/85">Verify your stand in two minutes. No fee, no levy, no obligation. Membership is yours to give, and ours to earn.</p>
         </div>
-        <dl class="grid grid-cols-2 gap-4">
-            @foreach ([['7', 'Committee members, named with their roles'], ['2', 'Signatories on every payment out'], [$stats['open_inbox'], 'Open requests in the committee inbox'], [$stats['answered_pct'] !== null ? $stats['answered_pct'].'%' : 'New', 'Answered within 48 hours']] as [$n, $l])
-                <div class="rounded-[12px] border border-white/15 bg-white/5 p-5"><dd class="font-serif text-4xl font-bold text-gold-500">{{ $n }}</dd><dt class="mt-1 text-sm text-cream/80">{{ $l }}</dt></div>
-            @endforeach
-        </dl>
+        <a href="/app/verify" class="btn bg-forest-900 text-cream hover:bg-forest-800">Verify my stand now</a>
     </div>
 </section>
 
 {{-- PARTNERS --}}
-<section class="border-t border-wheat bg-wheat" aria-labelledby="partners-title">
+<section class="bg-wheat" aria-labelledby="partners-title">
     <div class="wrap flex flex-col items-center gap-6 py-12">
         <h2 id="partners-title" class="eyebrow font-sans text-muted">Partners who stand behind each service</h2>
         <ul class="flex flex-wrap items-center justify-center gap-4">
@@ -221,17 +200,6 @@
                 </li>
             @endforeach
         </ul>
-    </div>
-</section>
-
-{{-- CTA --}}
-<section class="bg-gold-500 text-forest-900">
-    <div class="wrap flex flex-col items-start justify-between gap-6 py-14 lg:flex-row lg:items-center">
-        <div class="max-w-2xl">
-            <h2 class="font-serif text-3xl font-bold sm:text-4xl">Stronger together. A better community.</h2>
-            <p class="mt-2 text-[17px] text-forest-900/85">Verify your stand in two minutes. No fee, no levy, no obligation. Membership is yours to give, and ours to earn.</p>
-        </div>
-        <a href="/app/verify" class="btn bg-forest-900 text-cream hover:bg-forest-800">Verify my stand now</a>
     </div>
 </section>
 

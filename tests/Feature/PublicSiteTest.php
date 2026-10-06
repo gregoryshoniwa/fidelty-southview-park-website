@@ -59,7 +59,8 @@ class PublicSiteTest extends TestCase
         CmsPage::where('slug', 'constitution')->update(['published' => true]);
 
         $this->get('/constitution')->assertOk();
-        $this->get('/')->assertSee('Read the constitution')->assertSee('>Constitution<', false);
+        $this->get('/')->assertSee('>Constitution<', false);
+        $this->get('/about')->assertSee('Read the constitution');
     }
 
     public function test_home_has_seo_essentials(): void

@@ -44,7 +44,6 @@ class SiteController extends Controller
             'notices' => Notice::published()->orderByDesc('pinned')->orderByDesc('published_at')->take(4)->get(),
             'pages' => CommunityPage::where('active', true)->orderByDesc('verified')->take(3)->get(),
             'partners' => Partner::where('active', true)->whereNotNull('logo_path')->whereIn('type', ['developer', 'law_firm', 'bank'])->get(),
-            'stats' => self::stats(),
             'hero' => Sponsorship::live('hero_takeover')->first(),
             'tile' => Sponsorship::live('sponsored_tile')->inRandomOrder()->first(),
             'rect' => Sponsorship::live('medium_rect')->inRandomOrder()->first(),
