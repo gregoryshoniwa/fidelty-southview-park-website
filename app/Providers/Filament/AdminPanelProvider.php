@@ -24,6 +24,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -44,6 +45,14 @@ class AdminPanelProvider extends PanelProvider
     public function boot(): void
     {
         AdminAudit::register();
+        // Table rows: icon-only action buttons with the action's name as a hover hint (menus keep their labels).
+        Table::configureUsing(fn (Table $table) => $table->modifyUngroupedRecordActionsUsing(
+            function (Action $action) {
+                if ($action->getIcon() || $action->getTableIcon()) { // Edit/View/Delete keep theirs in tableIcon
+                    $action->iconButton()->tooltip(fn (Action $action) => $action->getLabel());
+                }
+            }
+        ));
         // Pop-up windows sized to their content: compact by default; wider ones opt in.
         Action::configureUsing(fn (Action $action) => $action->modalWidth(
             $action instanceof CreateAction || $action instanceof EditAction || $action instanceof ViewAction

@@ -111,7 +111,12 @@ class ResidentResource extends Resource
             ->columns([
                 TextColumn::make('user.name')->label('Name')->searchable(),
                 TextColumn::make('phone')->label('Phone')->fontFamily('mono')
-                    ->state(fn (Resident $r) => $r->user?->phone ? self::maskPhone($r->user->phone) : ($r->user?->unconfirmed_phone ? self::maskPhone($r->user->unconfirmed_phone).' (unconfirmed)' : '-')),
+                    // Confirmed numbers stay masked; a number waiting for the committee is shown in full so it can be called and checked.
+                    ->state(fn (Resident $r) => $r->user?->phone ? self::maskPhone($r->user->phone) : ($r->user?->unconfirmed_phone ?: '-'))
+                    ->description(fn (Resident $r) => ! $r->user?->phone && $r->user?->unconfirmed_phone ? 'Not confirmed yet' : null)
+                    ->color(fn (Resident $r) => ! $r->user?->phone && $r->user?->unconfirmed_phone ? 'warning' : null)
+                    ->url(fn (Resident $r) => ! $r->user?->phone && $r->user?->unconfirmed_phone ? 'tel:'.$r->user->unconfirmed_phone : null)
+                    ->tooltip(fn (Resident $r) => ! $r->user?->phone && $r->user?->unconfirmed_phone ? 'Call to check it is theirs' : null),
                 TextColumn::make('stand.stand_number')->label('Stand')->searchable()->placeholder('-'),
                 TextColumn::make('verification_status')->label('Verification')->badge()
                     ->formatStateUsing(fn ($state) => self::VERIFICATION[$state] ?? $state)
@@ -137,7 +142,9 @@ class ResidentResource extends Resource
                     ->color('warning')
                     ->visible(fn (Resident $record) => $record->user?->unconfirmed_phone && ! $record->user->phone)
                     ->requiresConfirmation()
-                    ->modalDescription(fn (Resident $record) => 'Confirm only after you have checked that '.$record->user->unconfirmed_phone.' belongs to '.$record->user->name.', for example by calling it or matching Fidelity Life records.')
+                    ->modalHeading(fn (Resident $record) => 'Confirm '.$record->user->unconfirmed_phone)
+                    ->modalDescription(fn (Resident $record) => 'Check that this number belongs to '.$record->user->name.' before confirming: call or WhatsApp it and ask them to confirm their name and stand '.($record->stand?->stand_number ?? '').', or match it with the number on their Fidelity Life Agreement of Sale.')
+                    ->modalSubmitActionLabel('Yes, it is theirs')
                     ->action(function (Resident $record) {
                         if (! self::confirmPhoneFor($record->user)) {
                             Notification::make()->title('This number is already linked to another account')->danger()->send();
