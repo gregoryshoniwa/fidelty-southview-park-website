@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, KeyRound, LogIn, ShieldCheck } from 'lucide-vue-next';
 import { api, ApiError } from '@/shared/api.js';
 import Field from '@/shared/Field.vue';
-import Logo from '../components/Logo.vue';
 import { usePortal } from '../store.js';
 
 const router = useRouter();
@@ -81,14 +80,9 @@ function restart() {
             <img src="/images/hero-deed-1280.webp" srcset="/images/hero-deed-768.webp 768w, /images/hero-deed-1280.webp 1280w, /images/hero-deed-1376.webp 1376w"
                  sizes="(min-width: 1024px) 44vw, 100vw" alt="" class="absolute inset-0 -z-10 size-full object-cover" decoding="async" fetchpriority="high">
             <div class="absolute inset-0 -z-10 bg-gradient-to-t from-forest-900 via-forest-900/75 to-forest-900/45 lg:bg-gradient-to-tr lg:from-forest-900 lg:via-forest-900/70 lg:to-forest-900/25" aria-hidden="true"></div>
-            <div class="flex items-center gap-3">
-                <Logo />
-                <div>
-                    <p class="eyebrow text-cream/60">Southview Park Residents</p>
-                    <p class="font-serif text-lg font-bold text-gold-400">Partner portal</p>
-                </div>
-            </div>
+            <a href="/" class="flex items-center gap-3"><img src="/images/logo-96.webp" width="48" height="48" alt="" class="size-12 rounded-[8px] bg-white"><span class="font-serif text-lg font-bold">Fidelity Southview Park<br><span class="font-sans text-xs font-extrabold uppercase tracking-[0.16em] text-gold-500">Residents Association</span></span></a>
             <div class="hidden max-w-md lg:block">
+                <p class="eyebrow mb-3 text-gold-400">Partner portal</p>
                 <h2 class="font-serif text-4xl font-bold leading-tight">Serve Southview residents from one queue.</h2>
                 <p class="mt-4 text-cream/75">Review requests and documents, update residents by SMS, and keep every conversation in one place.</p>
             </div>
